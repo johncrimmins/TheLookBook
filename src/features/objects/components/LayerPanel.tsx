@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useObjectsStore } from '../lib/objectsStore';
 import { useSelectionStore } from '../lib/selectionStore';
-import { useObjects } from '../hooks/useObjects';
 import { LayerItem } from './LayerItem';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 
@@ -12,9 +11,11 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
  * Supports selection, reordering, visibility toggle, and lock toggle
  */
 export function LayerPanel() {
-  const { objects, selectedObject } = useObjects();
-  const { selectObject } = useSelectionStore();
-  const { reorderLayer } = useObjectsStore();
+  const { objects: objectsMap, reorderLayer } = useObjectsStore();
+  const { selectObject, selectedIds } = useSelectionStore();
+  
+  // Convert objects map to array
+  const objects = useMemo(() => Object.values(objectsMap), [objectsMap]);
 
   // Sort objects by order descending (front to back for layer panel)
   const sortedObjects = useMemo(() => {
@@ -46,7 +47,7 @@ export function LayerPanel() {
           <LayerItem
             key={object.id}
             object={object}
-            isSelected={selectedObject?.id === object.id}
+            isSelected={selectedIds.includes(object.id)}
             onSelect={handleSelect}
             onReorder={handleReorder}
           />

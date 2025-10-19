@@ -45,7 +45,7 @@ export function useLookbookOperations() {
         },
         user.email,
         user.displayName,
-        user.photoURL
+        user.photoURL ?? undefined
       );
 
       // Add to store (optimistic)

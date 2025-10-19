@@ -2,13 +2,16 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
-import { useObjectsStore, generateLayerName } from '../lib/objectsStore';
+import { useObjectsStore, generateObjectName } from '../lib/objectsStore';
 import { useSelectionStore } from '../lib/selectionStore';
 import { useAuth } from '@/features/auth';
-import { CanvasObject, CreateObjectParams } from '../types';
+import { CanvasObject, CreateObjectParams, DEFAULT_LAYER_ID } from '../types';
 import { Point } from '@/shared/types';
 import { debounce, throttle } from '@/shared/lib/utils';
 import { useHistoryStore } from '@/features/history';
+import { doc, setDoc } from 'firebase/firestore';
+import { getFirestore } from '../lib/firebase';
+import { copyToClipboard, pasteFromClipboard } from '@/shared/lib/clipboard';
 import {
   createObject as createObjectService,
   updateObject as updateObjectService,
@@ -64,7 +67,8 @@ export function useObjects(canvasId: string | null) {
         setLayers(fetchedLayers);
         
         // Initialize expanded state for all layers
-        fetchedLayers.forEach(layer => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        fetchedLayers.forEach(_ => {
           initializeDefaultLayerInStore();
         });
       }
@@ -129,6 +133,7 @@ export function useObjects(canvasId: string | null) {
         opacity: 1.0,
         order: Date.now(), // Use timestamp for unique ordering
         createdBy: user.id,
+        layerId: DEFAULT_LAYER_ID, // Assign to default layer
       };
       
       try {
@@ -493,7 +498,7 @@ export function useObjects(canvasId: string | null) {
         createdAt: timestamp,
         updatedAt: timestamp,
         // Auto-generate new name for duplicate
-        name: generateLayerName(original.type, newId),
+        name: generateObjectName(original.type, newId),
       };
       
       // Record creation
@@ -509,8 +514,7 @@ export function useObjects(canvasId: string | null) {
       addObjectToStore(duplicated);
       
       // Persist to Firestore
-      const db = require('../lib/firebase').getFirestore();
-      const { doc, setDoc } = require('firebase/firestore');
+      const db = getFirestore();
       const objectRef = doc(db, 'canvases', canvasId, 'objects', newId);
       await setDoc(objectRef, duplicated);
     }
@@ -525,7 +529,6 @@ export function useObjects(canvasId: string | null) {
     const selectedObjects = getSelectedObjects();
     if (selectedObjects.length === 0) return false;
     
-    const { copyToClipboard } = require('@/shared/lib/clipboard');
     return copyToClipboard(selectedObjects, canvasId || undefined);
   }, [getSelectedObjects, canvasId]);
 
@@ -533,7 +536,6 @@ export function useObjects(canvasId: string | null) {
   const bulkPaste = useCallback(async () => {
     if (!canvasId || !user) return;
     
-    const { pasteFromClipboard } = require('@/shared/lib/clipboard');
     const clipboardData = pasteFromClipboard();
     
     if (!clipboardData || !clipboardData.objects) return;
@@ -556,7 +558,7 @@ export function useObjects(canvasId: string | null) {
         updatedAt: timestamp,
         createdBy: user.id,
         // Auto-generate new name for pasted object
-        name: generateLayerName(clipboardObject.type, newId),
+        name: generateObjectName(clipboardObject.type, newId),
       };
       
       newObjects.push(newObject);
@@ -574,8 +576,7 @@ export function useObjects(canvasId: string | null) {
       addObjectToStore(newObject);
       
       // Persist to Firestore
-      const db = require('../lib/firebase').getFirestore();
-      const { doc, setDoc } = require('firebase/firestore');
+      const db = getFirestore();
       const objectRef = doc(db, 'canvases', canvasId, 'objects', newId);
       await setDoc(objectRef, newObject);
     }

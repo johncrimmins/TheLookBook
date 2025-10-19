@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Stage, Layer } from 'react-konva';
+import { Stage, Layer as KonvaLayer } from 'react-konva';
 import Konva from 'konva';
 import { useCanvas } from '../hooks/useCanvas';
 import { usePresence } from '@/features/presence';
@@ -12,6 +12,7 @@ import { SelectionBox } from '@/features/objects/components/SelectionBox';
 import { getObjectsInBox } from '@/features/objects/lib/selectionUtils';
 import { useObjectsStore } from '@/features/objects/lib/objectsStore';
 import { useSelectionStore } from '@/features/objects/lib/selectionStore';
+import { Layer as LayerType } from '@/features/objects/types/layer';
 
 interface CanvasProps {
   canvasId: string;
@@ -193,7 +194,7 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
         const layersRecord = layers.reduce((acc, layer) => {
           acc[layer.id] = layer;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, LayerType>);
         const selectedIds = getObjectsInBox(objects, selectionBox, layersRecord);
         selectMultiple(selectedIds);
       } else {
@@ -256,12 +257,12 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
         x={viewport.x}
         y={viewport.y}
       >
-        <Layer>
+        <KonvaLayer>
           {/* Grid background */}
           {/* TODO: Add grid rendering */}
-        </Layer>
+        </KonvaLayer>
         
-        <Layer>
+        <KonvaLayer>
           {/* Objects will be rendered here */}
           {children}
           
@@ -269,7 +270,7 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
           {isDrawingMarquee && marqueeStart && marqueeCurrent && (
             <SelectionBox startPos={marqueeStart} currentPos={marqueeCurrent} />
           )}
-        </Layer>
+        </KonvaLayer>
       </Stage>
       
       {/* Render other users' cursors */}

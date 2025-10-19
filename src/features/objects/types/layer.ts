@@ -1,4 +1,5 @@
 // Layer types for hierarchical layer system
+import type { CanvasObject } from './index';
 
 /**
  * Layer entity - organizational groups containing multiple objects
@@ -17,7 +18,7 @@ export interface Layer {
  */
 export interface LayerWithObjects {
   layer: Layer;
-  objects: any[]; // Will be CanvasObject[] but avoiding circular dependency
+  objects: CanvasObject[];
   isExpanded: boolean;
 }
 

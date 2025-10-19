@@ -7,7 +7,7 @@ import { LayerThumbnail } from './LayerThumbnail';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { useObjectsStore, generateLayerName } from '../lib/objectsStore';
+import { useObjectsStore, generateObjectName } from '../lib/objectsStore';
 
 interface LayerItemProps {
   object: CanvasObject;
@@ -22,7 +22,7 @@ interface LayerItemProps {
  */
 export function LayerItem({ object, isSelected, onSelect, onReorder }: LayerItemProps) {
   const [isRenaming, setIsRenaming] = useState(false);
-  const [editedName, setEditedName] = useState(object.name || generateLayerName(object.type, object.id));
+  const [editedName, setEditedName] = useState(object.name || generateObjectName(object.type, object.id));
   const [isDragging, setIsDragging] = useState(false);
   const [isDropTarget, setIsDropTarget] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +39,7 @@ export function LayerItem({ object, isSelected, onSelect, onReorder }: LayerItem
 
   const handleDoubleClick = () => {
     setIsRenaming(true);
-    setEditedName(object.name || generateLayerName(object.type, object.id));
+    setEditedName(object.name || generateObjectName(object.type, object.id));
   };
 
   const handleSaveRename = () => {
@@ -51,7 +51,7 @@ export function LayerItem({ object, isSelected, onSelect, onReorder }: LayerItem
   };
 
   const handleCancelRename = () => {
-    setEditedName(object.name || generateLayerName(object.type, object.id));
+    setEditedName(object.name || generateObjectName(object.type, object.id));
     setIsRenaming(false);
   };
 
@@ -109,7 +109,7 @@ export function LayerItem({ object, isSelected, onSelect, onReorder }: LayerItem
     setIsDropTarget(false);
   };
 
-  const displayName = object.name || generateLayerName(object.type, object.id);
+  const displayName = object.name || generateObjectName(object.type, object.id);
   const isVisible = object.visible !== false;
   const isLocked = object.locked === true;
 

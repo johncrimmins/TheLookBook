@@ -1,7 +1,7 @@
 // Selection store - manages object selection state (LOCAL ONLY)
 import { create } from 'zustand';
 import { CanvasObject } from '../types';
-import { useObjectsStore, generateLayerName } from './objectsStore';
+import { useObjectsStore, generateObjectName } from './objectsStore';
 
 /**
  * SELECTION STATE IS LOCAL ONLY
@@ -107,7 +107,7 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
           createdAt: timestamp,
           updatedAt: timestamp,
           // Auto-generate new name for duplicate
-          name: generateLayerName(original.type, newId),
+          name: generateObjectName(original.type, newId),
         };
         
         addObject(duplicated);

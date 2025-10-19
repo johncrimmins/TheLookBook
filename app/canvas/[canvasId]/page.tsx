@@ -166,8 +166,8 @@ export default function CanvasPage() {
       setPastePreview(null);
     }
     
-    // Clear preview if switching to select tool or no cursor position
-    if (tool === 'select' || !cursorPosition) {
+    // Clear preview if switching to select/pan tool or no cursor position
+    if (tool === 'select' || tool === 'pan' || !cursorPosition) {
       // Use non-throttled immediate clear
       broadcastShapePreview(canvasId, null, user.id).then(() => {
         console.log('[Preview] Cleared preview (tool or cursor changed)');
@@ -178,7 +178,7 @@ export default function CanvasPage() {
     // Broadcast preview for rectangle or circle
     // Position should match where the shape will be placed (centered on cursor)
     const preview: ShapePreviewType = {
-      type: tool,
+      type: tool, // Now TypeScript knows tool can only be 'rectangle' | 'circle' here
       position: { x: cursorPosition.x - 50, y: cursorPosition.y - 50 },
       width: 100,
       height: 100,
@@ -201,7 +201,7 @@ export default function CanvasPage() {
   }, [canvasId, user]);
   
   const handlePlaceShape = useCallback(async (position: Point) => {
-    if (!canvasId || tool === 'select') return;
+    if (!canvasId || tool === 'select' || tool === 'pan') return;
     
     // IMMEDIATELY clear the preview BEFORE creating object
     // This ensures no throttled updates come after
@@ -212,7 +212,7 @@ export default function CanvasPage() {
     
     // Create shape at clicked position
     await createObject({
-      type: tool,
+      type: tool, // Now TypeScript knows tool can only be 'rectangle' | 'circle' here
       x: position.x - 50, // Center the shape on cursor
       y: position.y - 50,
       width: 100,

@@ -38,6 +38,7 @@ export function copyToClipboard(objects: CanvasObject | CanvasObject[], canvasId
         fill: object.fill,
         opacity: object.opacity,
         order: object.order,
+        layerId: object.layerId,
         name: object.name,
         visible: object.visible,
         locked: object.locked,

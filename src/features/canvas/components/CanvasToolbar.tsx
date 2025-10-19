@@ -103,7 +103,7 @@ export function CanvasToolbar({ canvasId }: CanvasToolbarProps) {
   };
 
   // Get active user IDs for presence badges
-  const activeUserIds = presence.map(p => p.userId);
+  const activeUserIds = Object.keys(presence);
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40">

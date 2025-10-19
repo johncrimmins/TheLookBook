@@ -1,5 +1,5 @@
 // Objects feature exports
-export { useObjectsStore, generateLayerName } from './lib/objectsStore';
+export { useObjectsStore, generateObjectName } from './lib/objectsStore';
 export { useSelectionStore } from './lib/selectionStore';
 export { useUIPreferencesStore } from './lib/uiPreferencesStore';
 export { db, rtdb, getFirestore, getRTDB } from './lib/firebase';
