@@ -76,17 +76,21 @@ All 5 core features deployed:
 - Real-time sync (RTDB + Firestore)
 - ShadCN UI, deployment to Vercel
 
-### In Scope (In Development)
+### In Scope (Phase 1 Complete) ✅
 - Phase 1: Toolbar refactor, layers panel, multi-select
+
+### In Scope (Planned)
 - Phase 2: AI Agent (LangChain + OpenAI, 8+ command types)
+- Phase 3: Lookbooks (PRDs ready - Feature 8 & 9)
+  - My Lookbooks: Multi-canvas project repository with auto-save
+  - Shared Lookbooks: Collaboration, ownership, Google Docs-style presence
+  - Backend: "canvases" collection, Frontend: "Lookbooks" terminology
+  - Firestore structure ready, no breaking changes to existing features
 
 ### Out of Scope (Future)
-- Lookbooks feature (project repository for canvases)
-  - Save, open, rename canvases
-  - Share canvases between users
-  - Ownership and collaboration management
-- AI Agent enhancements
+- Advanced Lookbooks features (templates, public sharing, search/filtering)
+- AI Agent enhancements beyond Phase 2
 
 ---
-*Last Updated: 2025-10-19 - Memory bank cleanup*
+*Last Updated: 2025-10-19 - Phase 1 complete; Lookbooks PRDs ready*
 
