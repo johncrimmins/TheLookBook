@@ -2,6 +2,9 @@
 'use client';
 
 import { PresenceUser, generateUserColor, formatTimestamp } from '../types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { Badge } from '@/shared/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
 interface OnlineUsersProps {
   presence: Record<string, PresenceUser>;
@@ -16,12 +19,14 @@ export function OnlineUsers({ presence, currentUserId }: OnlineUsersProps) {
   }
   
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">
-        Online ({users.length})
-      </h3>
+    <Card className="max-w-xs">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold">
+          Online ({users.length})
+        </CardTitle>
+      </CardHeader>
       
-      <div className="space-y-2">
+      <CardContent className="space-y-2">
         {users.map((user) => {
           const isCurrentUser = user.id === currentUserId;
           const color = generateUserColor(user.id);
@@ -29,49 +34,43 @@ export function OnlineUsers({ presence, currentUserId }: OnlineUsersProps) {
           return (
             <div
               key={user.id}
-              className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors"
             >
-              {user.photoURL ? (
-                <div
-                  className="w-8 h-8 rounded-full ring-2 overflow-hidden"
-                  style={{ borderColor: color }}
-                >
-                  <img
-                    src={user.photoURL}
-                    alt={user.displayName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm"
+              <Avatar className="h-8 w-8">
+                <AvatarImage 
+                  src={user.photoURL || undefined} 
+                  alt={user.displayName}
+                />
+                <AvatarFallback
+                  className="text-white font-medium text-sm"
                   style={{ backgroundColor: color }}
                 >
                   {user.displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
+                </AvatarFallback>
+              </Avatar>
               
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium truncate">
                   {user.displayName}
                   {isCurrentUser && (
-                    <span className="ml-1 text-xs text-gray-500">(you)</span>
+                    <span className="ml-1 text-xs text-muted-foreground">(you)</span>
                   )}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {formatTimestamp(user.joinedAt)}
                 </p>
               </div>
               
-              <div
-                className="w-2 h-2 rounded-full bg-green-500"
+              <Badge 
+                variant="outline" 
+                className="h-2 w-2 p-0 bg-green-500 border-green-500"
                 title="Online"
               />
             </div>
           );
         })}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

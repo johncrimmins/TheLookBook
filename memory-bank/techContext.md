@@ -8,7 +8,7 @@
 - **Styling:** Tailwind CSS
 - **Canvas Library:** Konva.js (canvas management and rendering)
 - **State Management:** Zustand (lightweight, performant state)
-- **UI Components:** Custom components with Tailwind
+- **UI Components:** ShadCN (built on Radix UI primitives + Tailwind CSS)
 
 ### Backend / Services
 - **Authentication:** Firebase Auth
@@ -26,17 +26,7 @@
 ## Development Setup
 
 ### Prerequisites
-- Node.js 18+ and npm/yarn/pnpm
-- Firebase account with project created
-- OpenAI API key (for AI agent phase)
-- Git for version control
-
-### Installation Steps
-1. Clone repository
-2. Install dependencies: `npm install`
-3. Configure Firebase project
-4. Set environment variables (see below)
-5. Run development server: `npm run dev`
+- Node.js 18+, Firebase account, OpenAI API key (for AI agent phase)
 
 ### Environment Configuration
 ```bash
@@ -59,7 +49,7 @@ LANGCHAIN_PROJECT=
 
 ## Dependencies
 
-### Core Dependencies (MVP)
+### Core Dependencies
 - `next`: Next.js framework
 - `react` & `react-dom`: React library
 - `typescript`: Type safety
@@ -67,6 +57,9 @@ LANGCHAIN_PROJECT=
 - `konva` & `react-konva`: Canvas rendering and manipulation
 - `zustand`: State management
 - `firebase`: Firebase SDK (Auth, RTDB, Firestore)
+- `@radix-ui/*`: Accessible UI primitives (ShadCN dependency)
+- `class-variance-authority`: Component variant management
+- `clsx` & `tailwind-merge`: Tailwind class utilities
 
 ### AI Dependencies (Post-MVP)
 - `langchain`: AI agent orchestration
@@ -151,30 +144,12 @@ src/
 
 ## Development Workflow
 
-### Version Control
-- **Repository:** Git (GitHub/GitLab)
-- **Branching:** Feature branches from main
-- **Commits:** Conventional commits format
-- **PRs:** Review before merge to main
-
 ### Build Strategy (Vertical Slicing)
-1. **Multiplayer Cursor Sync** (auth + presence + RTDB)
-2. **Multiplayer Object Sync** (canvas + objects + Firestore)
-3. **Transformations** (move, resize, rotate)
-4. **Basic AI Commands** (create, manipulate)
-5. **Complex AI Commands** (multi-step operations)
-
-### Testing Strategy (Future)
-- **Unit Tests:** Vitest for business logic
-- **Integration Tests:** Test feature interactions
-- **E2E Tests:** Chrome devtools MCP for user flows
-- **Performance Tests:** Lighthouse CI
-
-### Build and Deploy
-- **Development:** `npm run dev` (localhost:3000)
-- **Build:** `npm run build` (optimized production build)
-- **Deployment:** Push to main → Vercel auto-deploys
-- **Preview:** Vercel creates preview URLs for PRs
+1. ✅ Multiplayer Cursor Sync (auth + presence + RTDB)
+2. ✅ Multiplayer Object Sync (canvas + objects + Firestore)
+3. ✅ Transformations (move, resize, rotate)
+4. ✅ UI Component System (ShadCN + Radix UI + Tailwind)
+5. 🔄 AI Agent (LangChain + OpenAI function calling)
 
 ## Conflict Resolution Strategy
 **Approach:** Last-Write-Wins (LWW)
@@ -207,5 +182,5 @@ src/
 - Monitor costs (OpenAI, Firebase usage)
 
 ---
-*Last Updated: 2025-10-16*
+*Last Updated: 2025-10-19 - Added ShadCN UI dependencies*
 

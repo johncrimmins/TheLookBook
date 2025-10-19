@@ -7,7 +7,7 @@ alwaysApply: true
 // Recommended Globs: **/*.{js,jsx,ts,tsx}, **/*.sh
 
 ## Overview
-Always verify current directory and path structure before executing path-related commands to prevent errors and unintended operations.
+Always verify current directory and path structure before executing path-related commands to prevent errors and unintended operations. For our project we are in /home/johnc/projects/Gauntlet/TheLookBook/CollabCanvas-v3. If you're seeing Windows stuff happening - something is wrong.
 
 ## Core Rules
 1. Before any `cd` command:

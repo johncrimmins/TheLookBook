@@ -126,120 +126,55 @@
 ### Pattern 1: Feature Slice Pattern
 - **Purpose:** Organize all related code for a feature in one place
 - **Implementation:** Each feature has components/, hooks/, services/, types/
-- **Example:**
-```typescript
-src/features/presence/
-  ├── components/
-  │   ├── PresenceIndicator.tsx
-  │   └── UserCursor.tsx
-  ├── hooks/
-  │   ├── usePresence.ts
-  │   └── useUserCursors.ts
-  ├── services/
-  │   └── presenceService.ts
-  └── types/
-      └── presence.types.ts
-```
+- **Example:** See @src/features/presence/ for complete implementation
 
 ### Pattern 2: Service Layer Pattern
 - **Purpose:** Encapsulate Firebase interactions and business logic
 - **Implementation:** Each feature has a service file handling external calls
-- **Example:**
-```typescript
-// features/presence/services/presenceService.ts
-export const presenceService = {
-  joinCanvas: (userId: string, canvasId: string) => {...},
-  leaveCanvas: (userId: string, canvasId: string) => {...},
-  updateCursor: (userId: string, position: Point) => {...},
-  subscribeToCursors: (canvasId: string, callback) => {...}
-};
-```
+- **Example:** See @src/features/presence/services/presenceService.ts
 
 ### Pattern 3: Custom Hooks Pattern
 - **Purpose:** Encapsulate stateful logic and side effects
 - **Implementation:** Each feature exposes React hooks for components
-- **Example:**
-```typescript
-// features/presence/hooks/usePresence.ts
-export function usePresence(canvasId: string) {
-  const user = useAuth();
-  
-  useEffect(() => {
-    presenceService.joinCanvas(user.id, canvasId);
-    return () => presenceService.leaveCanvas(user.id, canvasId);
-  }, [canvasId, user.id]);
-  
-  // Handle cursor updates, online users, etc.
-}
-```
+- **Example:** See @src/features/presence/hooks/usePresence.ts
 
 ### Pattern 4: Optimistic Updates Pattern
 - **Purpose:** Provide instant feedback before server confirmation
 - **Implementation:** Update local state immediately, then sync to server
-- **Example:**
-```typescript
-function moveObject(objectId: string, newPosition: Point) {
-  // 1. Optimistic local update
-  updateLocalStore(objectId, newPosition);
-  
-  // 2. Broadcast to other users via RTDB
-  broadcastDelta(objectId, { position: newPosition });
-  
-  // 3. Persist to Firestore (debounced)
-  debouncedPersist(objectId, newPosition);
-}
-```
+- **Key Steps:** (1) Local store update, (2) RTDB broadcast, (3) Firestore persist
+- **Example:** See @src/features/objects/hooks/useObjects.ts
 
 ### Pattern 5: Pub/Sub Pattern for Real-Time Updates
 - **Purpose:** Decouple data producers from consumers
 - **Implementation:** RTDB listeners trigger store updates
-- **Example:**
-```typescript
-// Subscribe to object updates
-rtdb.ref(`canvas/${canvasId}/objects`).on('child_changed', (snapshot) => {
-  const objectUpdate = snapshot.val();
-  store.updateObject(objectUpdate);
-});
-```
+- **Example:** See @src/features/objects/services/objectsService.ts and @src/features/presence/services/presenceService.ts
 
 ### Pattern 6: Shared Interaction Hook Pattern (DRY)
 - **Purpose:** Eliminate code duplication across shape components
 - **Implementation:** Single hook handles all interaction logic for any shape type
-- **Benefits:** 
-  - One place to update interaction logic
-  - New shapes can be added in ~30 lines
-  - Type-safe with TypeScript generics
-  - Ready for AI agent integration
-- **Example:**
-```typescript
-// features/objects/hooks/useShapeInteractions.ts
-export function useShapeInteractions<T extends Konva.Shape>({
-  objectId,
-  isSelected,
-  onSelect,
-  onDragMove,
-  onDragEnd,
-  onTransformStart,
-  onTransform,
-  onTransformEnd,
-  positionTransform,
-  isBeingTransformedByOther,
-  transformingUserName,
-}) {
-  // All interaction logic centralized here
-  return { shapeRef, trRef, handlers, visualState };
-}
+- **Benefits:** One place to update logic, ~30 lines for new shapes, type-safe, AI-ready
+- **Example:** See @src/features/objects/hooks/useShapeInteractions.ts (hook) and @src/features/objects/components/Rectangle.tsx (usage)
 
-// Usage in any shape component:
-export function Rectangle({ object, ...props }) {
-  const { shapeRef, trRef, handlers } = useShapeInteractions<Konva.Rect>({
-    objectId: object.id,
-    ...props,
-  });
-  
-  return <Rect ref={shapeRef} {...handlers} />;
-}
-```
+### Pattern 7: ShadCN Component Pattern
+- **Purpose:** Provide reusable, accessible, and professionally styled UI components
+- **Implementation:** ShadCN components built on Radix UI primitives with Tailwind styling
+- **Location:** All UI components live in `src/shared/components/ui/`
+- **Composition:** Components use class variance authority (CVA) for variants
+- **Theming:** CSS variables in globals.css, mapped to Tailwind in tailwind.config.ts
+- **Benefits:** 
+  - Consistent design system across features
+  - Accessible by default (ARIA compliant)
+  - Easily customizable with Tailwind classes
+  - Copy-paste ownership (components are in your codebase)
+- **Key Components:**
+  - Button (variants: default, ghost, outline, secondary, link)
+  - Input, Label (form elements)
+  - Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+  - Avatar, AvatarImage, AvatarFallback
+  - Badge (status indicators)
+  - Separator (dividers)
+- **Example:** `import { Button } from '@/shared/components/ui/button'`
+- **Documentation:** https://ui.shadcn.com
 
 ## Component Relationships
 
@@ -280,40 +215,13 @@ export function Rectangle({ object, ...props }) {
 ## Data Flow Patterns
 
 ### Cursor Movement Flow
-```
-User moves mouse
-  → Throttle to 60fps
-  → Update local Zustand store
-  → Broadcast to RTDB (`cursors/${canvasId}/${userId}`)
-  → Other users' RTDB listeners fire
-  → Update their Zustand stores
-  → Re-render cursor components
-  [Total latency: <50ms]
-```
+User moves → Throttle (60fps) → Local store → RTDB broadcast → Listeners fire → Other users' stores update → Render (<50ms total)
 
 ### Object Creation Flow
-```
-User creates object
-  → Generate UUID
-  → Optimistic: Add to local Zustand store
-  → Persist: Write to Firestore (`canvases/${canvasId}/objects`)
-  → Broadcast: Send to RTDB (`deltas/${canvasId}`)
-  → Other users' RTDB listeners fire
-  → Fetch from Firestore if needed
-  → Update their Zustand stores
-  → Re-render canvas
-  [Total latency: <100ms]
-```
+User creates → UUID → Local store (optimistic) → Firestore persist → RTDB broadcast → Listeners fire → Other users' stores update → Render (<100ms total)
 
 ### Object Movement Flow
-```
-User drags object
-  → Optimistic: Update local position immediately
-  → Throttle: Send position to RTDB every 16ms
-  → Debounce: Persist to Firestore after drag ends (300ms)
-  → Other users see smooth movement via RTDB deltas
-  [Latency: <100ms, perceived as instant]
-```
+User drags → Local update (optimistic) → RTDB throttle (16ms) → Firestore debounce (300ms) → Smooth sync across users (<100ms perceived)
 
 ## Standards and Conventions
 
@@ -350,5 +258,5 @@ User drags object
 - Performance benchmarks for sync latency
 
 ---
-*Last Updated: 2025-10-16 (Added Pattern 6: Shared Interaction Hook)*
+*Last Updated: 2025-10-19 (Added Pattern 7: ShadCN Component Pattern)*
 

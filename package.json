@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
     "clsx": "^2.1.1",
     "firebase": "^10.12.0",
     "konva": "^9.3.0",

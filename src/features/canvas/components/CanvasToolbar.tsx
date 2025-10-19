@@ -2,15 +2,19 @@
 'use client';
 
 import { useCanvas } from '../hooks/useCanvas';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
+import { Separator } from '@/shared/components/ui/separator';
 
 export function CanvasToolbar() {
   const { viewport, zoom, resetViewport } = useCanvas();
   
   return (
-    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-lg border border-gray-200">
-      <button
+    <Card className="flex items-center gap-2 px-4 py-2">
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => zoom(-1)}
-        className="p-2 hover:bg-gray-100 rounded-md transition-colors"
         title="Zoom out"
         aria-label="Zoom out"
       >
@@ -29,19 +33,21 @@ export function CanvasToolbar() {
           <path d="m21 21-4.35-4.35" />
           <line x1="8" y1="11" x2="14" y2="11" />
         </svg>
-      </button>
+      </Button>
       
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={resetViewport}
-        className="px-3 py-1 hover:bg-gray-100 rounded-md transition-colors text-sm font-medium"
         title="Reset zoom"
       >
         {Math.round(viewport.scale * 100)}%
-      </button>
+      </Button>
       
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         onClick={() => zoom(1)}
-        className="p-2 hover:bg-gray-100 rounded-md transition-colors"
         title="Zoom in"
         aria-label="Zoom in"
       >
@@ -61,14 +67,14 @@ export function CanvasToolbar() {
           <line x1="11" y1="8" x2="11" y2="14" />
           <line x1="8" y1="11" x2="14" y2="11" />
         </svg>
-      </button>
+      </Button>
       
-      <div className="w-px h-6 bg-gray-300 mx-2" />
+      <Separator orientation="vertical" className="h-6 mx-2" />
       
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         Click and drag to pan
       </div>
-    </div>
+    </Card>
   );
 }
 

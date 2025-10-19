@@ -1,0 +1,256 @@
+---
+description: Enforce ShadCN component usage for all UI elements
+globs:
+  - "src/**/*.tsx"
+  - "app/**/*.tsx"
+---
+
+# ShadCN UI Component Usage
+
+## Core Principle
+**ALWAYS use ShadCN components for UI primitives. NEVER build custom button, input, card, or similar components without explicit user approval.**
+
+## Available Components
+
+### Installed ShadCN Components
+Located in `src/shared/components/ui/`:
+
+1. **Button** (`button.tsx`)
+   - Variants: `default`, `ghost`, `outline`, `secondary`, `destructive`, `link`
+   - Sizes: `default`, `sm`, `lg`, `icon`
+   - Usage: `<Button variant="ghost" size="sm">Click me</Button>`
+
+2. **Input** (`input.tsx`)
+   - Standard text input with consistent styling
+   - Usage: `<Input type="email" placeholder="Enter email" />`
+
+3. **Label** (`label.tsx`)
+   - Form labels with proper accessibility
+   - Usage: `<Label htmlFor="email">Email</Label>`
+
+4. **Card** (`card.tsx`)
+   - Container component with sub-components
+   - Sub-components: CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+   - Usage: 
+     ```tsx
+     <Card>
+       <CardHeader>
+         <CardTitle>Title</CardTitle>
+         <CardDescription>Description</CardDescription>
+       </CardHeader>
+       <CardContent>Content here</CardContent>
+     </Card>
+     ```
+
+5. **Avatar** (`avatar.tsx`)
+   - User avatar with fallback
+   - Sub-components: AvatarImage, AvatarFallback
+   - Usage:
+     ```tsx
+     <Avatar>
+       <AvatarImage src={url} alt="User" />
+       <AvatarFallback>JD</AvatarFallback>
+     </Avatar>
+     ```
+
+6. **Badge** (`badge.tsx`)
+   - Status indicators and labels
+   - Variants: `default`, `secondary`, `destructive`, `outline`
+   - Usage: `<Badge variant="outline">Active</Badge>`
+
+7. **Separator** (`separator.tsx`)
+   - Visual dividers
+   - Orientations: `horizontal`, `vertical`
+   - Usage: `<Separator orientation="vertical" />`
+
+## Import Pattern
+
+### Correct Import
+```tsx
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card';
+```
+
+### Barrel Export (also available)
+```tsx
+import { Button, Card, CardHeader } from '@/shared/components/ui';
+```
+
+## Usage Rules
+
+### 1. ALWAYS Use ShadCN for These Elements
+- ✅ Buttons → `<Button>`
+- ✅ Text inputs → `<Input>`
+- ✅ Form labels → `<Label>`
+- ✅ Containers/panels → `<Card>`
+- ✅ User avatars → `<Avatar>`
+- ✅ Status badges → `<Badge>`
+- ✅ Dividers → `<Separator>`
+
+### 2. NEVER Do This
+❌ **DON'T** create custom button components:
+```tsx
+// BAD - Don't do this!
+<button className="px-4 py-2 bg-blue-600 hover:bg-blue-700">
+  Click me
+</button>
+```
+
+✅ **DO** use ShadCN Button:
+```tsx
+// GOOD - Do this instead!
+<Button variant="default">Click me</Button>
+```
+
+### 3. Extending ShadCN Components
+You CAN add custom Tailwind classes to ShadCN components:
+
+```tsx
+// This is allowed - adding custom classes
+<Button className="w-full mt-4">Submit</Button>
+<Card className="max-w-md mx-auto">Content</Card>
+```
+
+### 4. Component Variants
+Use built-in variants instead of custom styling:
+
+```tsx
+// Tool selection - use variant for active state
+<Button 
+  variant={tool === 'select' ? 'secondary' : 'ghost'}
+  size="icon"
+>
+  {/* icon */}
+</Button>
+
+// Destructive actions
+<Button variant="destructive">Delete</Button>
+
+// Link-style buttons
+<Button variant="link">Learn more</Button>
+```
+
+## Customization Guidelines
+
+### Color Theming
+Use semantic color tokens defined in `app/globals.css`:
+- `bg-background`, `text-foreground`
+- `bg-primary`, `text-primary-foreground`
+- `bg-secondary`, `text-secondary-foreground`
+- `bg-destructive`, `text-destructive-foreground`
+- `bg-muted`, `text-muted-foreground`
+- `bg-accent`, `text-accent-foreground`
+- `border-border`, `border-input`
+
+### Custom Variants
+If you need a custom variant not provided by ShadCN, you have two options:
+
+1. **Ask the user first** if the component needs a new variant
+2. **Extend the component** by modifying the component file in `src/shared/components/ui/`
+
+Example of extending Button with a custom variant:
+```tsx
+// In button.tsx
+const buttonVariants = cva(
+  "base classes...",
+  {
+    variants: {
+      variant: {
+        default: "...",
+        ghost: "...",
+        // Add custom variant
+        custom: "bg-custom-color hover:bg-custom-hover",
+      }
+    }
+  }
+)
+```
+
+## When ShadCN Doesn't Have a Component
+
+If you need a UI element that ShadCN doesn't provide (e.g., a specific custom component for canvas interaction):
+
+1. **First, check if it can be composed** from existing ShadCN components
+2. **If not available**, ask the user: "Should I add [component-name] from ShadCN, or build a custom component for this use case?"
+3. **Document the decision** in the code with a comment
+
+Example:
+```tsx
+// Custom canvas-specific component (approved by user)
+// Not using ShadCN because this requires Konva.js integration
+function CanvasShape({ ... }) { ... }
+```
+
+## Adding New ShadCN Components
+
+To add a new ShadCN component:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+This will:
+1. Install required dependencies
+2. Create the component in `src/shared/components/ui/`
+3. You should then add it to the barrel export in `src/shared/components/ui/index.ts`
+
+## Examples from Codebase
+
+### Auth Form
+```tsx
+// ✅ GOOD - Uses ShadCN components
+<Card>
+  <CardHeader>
+    <CardTitle>Sign In</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="space-y-2">
+      <Label htmlFor="email">Email</Label>
+      <Input id="email" type="email" />
+    </div>
+    <Button type="submit">Sign In</Button>
+  </CardContent>
+</Card>
+```
+
+### Toolbar
+```tsx
+// ✅ GOOD - Uses Button with variants
+<Button
+  variant={isActive ? 'secondary' : 'ghost'}
+  size="icon"
+  onClick={handleClick}
+>
+  <IconSVG />
+</Button>
+```
+
+### User Profile
+```tsx
+// ✅ GOOD - Uses Card and Avatar
+<Card className="flex items-center gap-3 p-2">
+  <Avatar>
+    <AvatarImage src={photoURL} />
+    <AvatarFallback>{initials}</AvatarFallback>
+  </Avatar>
+  <Button variant="ghost">Sign Out</Button>
+</Card>
+```
+
+## Key Reminders
+
+1. **Default to ShadCN** - If it's a UI element, check ShadCN first
+2. **Ask before custom** - If ShadCN doesn't have it, ask the user
+3. **Document exceptions** - Comment why you're not using ShadCN when appropriate
+4. **Consistent imports** - Always use `@/shared/components/ui/[component]`
+5. **Leverage variants** - Use built-in variants before adding custom classes
+
+## Reference
+- **Documentation:** https://ui.shadcn.com
+- **Component Location:** `src/shared/components/ui/`
+- **Theme Config:** `app/globals.css` (CSS variables)
+- **Tailwind Config:** `tailwind.config.ts` (theme mappings)
+- **ShadCN Config:** `components.json` (CLI configuration)
+
+---
+*Last Updated: 2025-10-19*

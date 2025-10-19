@@ -10,6 +10,8 @@ import { ShapePreview as ShapePreviewComponent } from '@/features/objects/compon
 import type { ShapePreview as ShapePreviewType } from '@/features/objects/types';
 import { Point } from '@/shared/types';
 import { throttle } from '@/shared/lib/utils';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
 
 // Tell Next.js not to prerender this page
 export const dynamic = 'force-dynamic';
@@ -212,16 +214,13 @@ export default function CanvasPage() {
               </h1>
               
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant={tool === 'select' ? 'secondary' : 'ghost'}
+                  size="icon"
                   onClick={() => {
                     setTool('select');
                     // Effect will clear preview when tool changes
                   }}
-                  className={`p-2 rounded-md transition-colors ${
-                    tool === 'select'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
                   title="Select"
                 >
                   <svg
@@ -237,15 +236,12 @@ export default function CanvasPage() {
                   >
                     <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
                   </svg>
-                </button>
+                </Button>
                 
-                <button
+                <Button
+                  variant={tool === 'rectangle' ? 'secondary' : 'ghost'}
+                  size="icon"
                   onClick={() => setTool('rectangle')}
-                  className={`p-2 rounded-md transition-colors ${
-                    tool === 'rectangle'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
                   title="Rectangle - Click to place"
                 >
                   <svg
@@ -261,15 +257,12 @@ export default function CanvasPage() {
                   >
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   </svg>
-                </button>
+                </Button>
                 
-                <button
+                <Button
+                  variant={tool === 'circle' ? 'secondary' : 'ghost'}
+                  size="icon"
                   onClick={() => setTool('circle')}
-                  className={`p-2 rounded-md transition-colors ${
-                    tool === 'circle'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
                   title="Circle - Click to place"
                 >
                   <svg
@@ -285,20 +278,24 @@ export default function CanvasPage() {
                   >
                     <circle cx="12" cy="12" r="10" />
                   </svg>
-                </button>
+                </Button>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setShowOnlineUsers(!showOnlineUsers)}
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
+                className="gap-2"
               >
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-sm font-medium text-gray-700">
+                <Badge 
+                  variant="outline" 
+                  className="h-2 w-2 p-0 bg-green-500 border-green-500"
+                />
+                <span className="text-sm font-medium">
                   {Object.keys(presence).length} online
                 </span>
-              </button>
+              </Button>
               
               <UserProfile />
             </div>
