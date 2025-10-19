@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { getAuth } from '../lib/firebase';
 import { AuthFormData } from '../types';
@@ -49,5 +51,14 @@ export async function signIn(data: AuthFormData): Promise<void> {
 export async function signOut(): Promise<void> {
   const auth = getAuth();
   await firebaseSignOut(auth);
+}
+
+/**
+ * Sign in with Google
+ */
+export async function signInWithGoogle(): Promise<void> {
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
 }
 

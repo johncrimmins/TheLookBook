@@ -177,6 +177,19 @@
 - **Example:** Feature 6 (Multi-Select) uses all three stores
 - **Key Principle:** Selection is local UI state, manipulation triggers backend sync
 
+### Pattern 9: Dual-Collection Firestore Pattern (Lookbooks)
+- **Purpose:** Enable efficient user-specific queries while maintaining shared document access
+- **Implementation:** Write to both `canvases/{canvasId}` and `users/{userId}/canvases/{canvasId}`
+- **Benefits:**
+  - Fast user-specific queries (no compound indexes needed)
+  - Shared document structure (future collaboration support)
+  - Clear ownership model (userId in both locations)
+- **Trade-offs:**
+  - ✅ Simple queries, efficient permissions
+  - ✅ Supports future sharing (shared users can access `canvases/{canvasId}`)
+  - ⚠️ Requires cleanup of both collections on delete
+- **Example:** Feature 8 (My Lookbooks) uses this pattern for canvas management
+
 ## Component Relationships
 
 ### Core Features (MVP)
@@ -204,6 +217,12 @@
 - **Exposes:** `useObjects()`, shape components, object services
 - **Dependencies:** Firestore, RTDB, Canvas feature
 - **Integration:** Rendered within Canvas, synced via services
+
+#### Lookbooks Feature
+- **Responsibilities:** Multi-canvas project management, CRUD operations
+- **Exposes:** `useLookbooks()`, `useLookbookOperations()`, Lookbook components
+- **Dependencies:** Firestore, Auth feature
+- **Integration:** Repository page (`/mylookbooks`), canvas navigation, toolbar integration
 
 ### Post-MVP Features
 
@@ -259,5 +278,5 @@ User drags → Local update (optimistic) → RTDB throttle (16ms) → Firestore 
 - JSDoc for public APIs, inline comments for complex logic
 
 ---
-*Last Updated: 2025-10-19 (Added Pattern 8: Three-Store Separation for Feature 6)*
+*Last Updated: 2025-10-19 (Added Pattern 9: Dual-Collection Firestore for Feature 8)*
 

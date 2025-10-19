@@ -373,3 +373,11 @@ export async function initializeDefaultLayer(canvasId: string): Promise<void> {
   }
 }
 
+/**
+ * Create Default Layer for a new canvas
+ * Alias for initializeDefaultLayer for clarity in Lookbooks feature
+ */
+export async function createDefaultLayer(canvasId: string): Promise<void> {
+  return initializeDefaultLayer(canvasId);
+}
+

@@ -44,8 +44,6 @@ yarn-error.log*
 *~
 
 # Cursor/Claude AI
-.cursor/*
-!.cursor/rules/
 .claude/
 *.claude.json
 *agent-tools/

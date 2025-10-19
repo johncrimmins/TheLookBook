@@ -9,6 +9,7 @@
 - **Canvas Library:** Konva.js (canvas management and rendering)
 - **State Management:** Zustand (lightweight, performant state)
 - **UI Components:** ShadCN (built on Radix UI primitives + Tailwind CSS)
+- **Authentication:** Firebase Auth (Email/Password + Google Sign-In)
 
 ### Backend / Services
 - **Authentication:** Firebase Auth
@@ -38,6 +39,7 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 NEXT_PUBLIC_FIREBASE_DATABASE_URL=
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=  # Optional: Google Analytics
 
 # OpenAI (Post-MVP)
 OPENAI_API_KEY=
@@ -99,6 +101,12 @@ src/
 │   │   ├── hooks/
 │   │   ├── services/
 │   │   └── types/
+│   ├── lookbooks/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── services/
+│   │   └── types/
 │   └── ai-agent/ (post-MVP)
 │       ├── components/
 │       ├── hooks/
@@ -112,7 +120,10 @@ src/
 └── app/ (Next.js App Router)
     ├── layout.tsx
     ├── page.tsx
-    └── canvas/[id]/page.tsx
+    ├── mylookbooks/page.tsx
+    └── canvas/
+        ├── page.tsx
+        └── [canvasId]/page.tsx
 ```
 
 ## Technical Constraints
@@ -146,8 +157,9 @@ src/
 
 ### Build Strategy
 1. ✅ Core Platform (auth, presence, canvas, objects, history)
-2. 🔄 Phase 1 Canvas Improvements (manipulation features, UI refactor)
-3. 📋 Phase 2 AI Agent (LangChain + OpenAI)
+2. ✅ Phase 1 Canvas Improvements (manipulation features, UI refactor, layers)
+3. 🔄 Phase 3 Lookbooks (Feature 8 complete, Feature 9 next)
+4. 📋 Phase 2 AI Agent (LangChain + OpenAI)
 
 ## Conflict Resolution Strategy
 **Approach:** Last-Write-Wins (LWW)
@@ -173,5 +185,5 @@ src/
 - Sanitize AI-generated commands
 
 ---
-*Last Updated: 2025-10-19 - Added ShadCN UI dependencies*
+*Last Updated: 2025-10-19 - Feature 8 (My Lookbooks) complete with Google Auth integration*
 

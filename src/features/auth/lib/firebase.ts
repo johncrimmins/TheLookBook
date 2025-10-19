@@ -28,8 +28,8 @@ if (typeof window !== 'undefined') {
   auth = getAuthClient(app);
 }
 
-// Export auth instance (can be null during SSR)
-export { auth };
+// Export app and auth instances (can be null during SSR)
+export { app, auth };
 
 // Helper function to safely access Firebase Auth with error handling
 export function getAuth(): Auth {
@@ -37,5 +37,13 @@ export function getAuth(): Auth {
     throw new Error('Firebase Auth not initialized. This should only be called on the client side.');
   }
   return auth;
+}
+
+// Helper function to safely access Firebase App with error handling
+export function getApp(): FirebaseApp {
+  if (!app) {
+    throw new Error('Firebase App not initialized. This should only be called on the client side.');
+  }
+  return app;
 }
 
