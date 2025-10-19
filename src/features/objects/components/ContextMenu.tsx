@@ -10,9 +10,11 @@ import { useObjects } from '../hooks/useObjects';
 
 interface ContextMenuProps {
   canvasId: string;
+  onDuplicate?: (objectId: string) => void;
+  onCopy?: (objectId: string) => void;
 }
 
-export function ContextMenu({ canvasId }: ContextMenuProps) {
+export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps) {
   const contextMenu = useCanvasStore((state) => state.contextMenu);
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const setPropertiesPanel = useCanvasStore((state) => state.setPropertiesPanel);
@@ -64,6 +66,20 @@ export function ContextMenu({ canvasId }: ContextMenuProps) {
     setContextMenu(null);
   };
 
+  const handleDuplicate = () => {
+    if (onDuplicate) {
+      onDuplicate(contextMenu.objectId);
+    }
+    setContextMenu(null);
+  };
+
+  const handleCopy = () => {
+    if (onCopy) {
+      onCopy(contextMenu.objectId);
+    }
+    setContextMenu(null);
+  };
+
   return (
     <>
       {/* Backdrop to catch clicks outside */}
@@ -105,6 +121,54 @@ export function ContextMenu({ canvasId }: ContextMenuProps) {
 
           <Separator />
 
+          {/* Copy */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start h-8 px-2 text-sm font-normal"
+            onClick={handleCopy}
+          >
+            <svg
+              className="mr-2 h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Copy
+            <span className="ml-auto text-xs text-gray-400">Ctrl+C</span>
+          </Button>
+
+          {/* Duplicate */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start h-8 px-2 text-sm font-normal"
+            onClick={handleDuplicate}
+          >
+            <svg
+              className="mr-2 h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Duplicate
+            <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
+          </Button>
+
+          <Separator />
+
           {/* Delete */}
           <Button
             variant="ghost"
@@ -125,28 +189,6 @@ export function ContextMenu({ canvasId }: ContextMenuProps) {
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
             Delete
-          </Button>
-
-          {/* Duplicate - placeholder */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start h-8 px-2 text-sm font-normal"
-            disabled
-          >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
-            Duplicate
           </Button>
 
           <Separator />

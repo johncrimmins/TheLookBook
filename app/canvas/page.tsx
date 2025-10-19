@@ -11,6 +11,7 @@ import type { ShapePreview as ShapePreviewType } from '@/features/objects/types'
 import { useHistory } from '@/features/history';
 import { Point } from '@/shared/types';
 import { throttle } from '@/shared/lib/utils';
+import { copyToClipboard, pasteFromClipboard } from '@/shared/lib/clipboard';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 
@@ -28,6 +29,8 @@ export default function CanvasPage() {
   const [cursorPosition, setCursorPosition] = useState<Point | null>(null);
   const [shapePreviews, setShapePreviews] = useState<Record<string, ShapePreviewType>>({});
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  const [pastePreview, setPastePreview] = useState<ShapePreviewType | null>(null);
+  const [isPasteMode, setIsPasteMode] = useState(false);
   
   const { 
     objects, 
@@ -96,9 +99,32 @@ export default function CanvasPage() {
     }, 16) // 60fps
   ).current;
   
-  // Broadcast shape preview when cursor moves in shape creation mode
+  // Broadcast shape preview when cursor moves in shape creation mode OR paste mode
   useEffect(() => {
     if (!canvasId || !user) return;
+    
+    // Handle paste mode preview (local only, not broadcast)
+    if (isPasteMode && cursorPosition) {
+      const clipboardData = pasteFromClipboard();
+      if (clipboardData) {
+        const preview: ShapePreviewType = {
+          type: clipboardData.object.type as 'rectangle' | 'circle',
+          position: { 
+            x: cursorPosition.x - clipboardData.object.width / 2, 
+            y: cursorPosition.y - clipboardData.object.height / 2 
+          },
+          width: clipboardData.object.width,
+          height: clipboardData.object.height,
+          fill: clipboardData.object.fill,
+          userId: user.id,
+          userName: user.displayName || user.email || 'Anonymous',
+        };
+        setPastePreview(preview);
+      }
+      return;
+    } else {
+      setPastePreview(null);
+    }
     
     // Clear preview if switching to select tool or no cursor position
     if (tool === 'select' || !cursorPosition) {
@@ -123,7 +149,7 @@ export default function CanvasPage() {
     
     // Throttle the preview updates for performance
     throttledBroadcastPreview(canvasId, preview, user.id);
-  }, [canvasId, user, tool, cursorPosition, throttledBroadcastPreview]);
+  }, [canvasId, user, tool, cursorPosition, isPasteMode, throttledBroadcastPreview]);
   
   // Cleanup: Clear shape preview on unmount or when leaving the canvas
   useEffect(() => {
@@ -159,7 +185,54 @@ export default function CanvasPage() {
     setTool('select');
   }, [canvasId, tool, createObject, user]);
   
+  const handlePlacePastedObject = useCallback(async (position: Point) => {
+    if (!canvasId || !isPasteMode) return;
+    
+    // Get data from clipboard
+    const clipboardData = pasteFromClipboard();
+    if (!clipboardData) {
+      setIsPasteMode(false);
+      setPastePreview(null);
+      return;
+    }
+    
+    try {
+      // Create object from clipboard at clicked position
+      const pasteParams = {
+        type: clipboardData.object.type,
+        x: position.x - clipboardData.object.width / 2, // Center on cursor
+        y: position.y - clipboardData.object.height / 2,
+        width: clipboardData.object.width,
+        height: clipboardData.object.height,
+        fill: clipboardData.object.fill,
+      };
+      
+      // Create the pasted object
+      const newObject = await createObject(pasteParams);
+      
+      // Auto-select the pasted object
+      if (newObject) {
+        setSelectedObjectId(newObject.id);
+        console.log('Pasted object from clipboard');
+      }
+      
+      // Exit paste mode and clear preview
+      setIsPasteMode(false);
+      setPastePreview(null);
+    } catch (error) {
+      console.error('Failed to paste object:', error);
+      setIsPasteMode(false);
+      setPastePreview(null);
+    }
+  }, [canvasId, isPasteMode, createObject]);
+  
   const handleCanvasClick = useCallback((position?: Point) => {
+    // Handle paste mode - place pasted object
+    if (isPasteMode && position) {
+      handlePlacePastedObject(position);
+      return;
+    }
+    
     if (tool === 'select') {
       // Increment trigger to deselect all objects
       setDeselectTrigger(prev => prev + 1);
@@ -167,7 +240,7 @@ export default function CanvasPage() {
       // Place the shape at the clicked position
       handlePlaceShape(position);
     }
-  }, [tool, handlePlaceShape]);
+  }, [tool, isPasteMode, handlePlaceShape, handlePlacePastedObject]);
   
   const handleCursorMove = useCallback((position: Point) => {
     setCursorPosition(position);
@@ -196,20 +269,113 @@ export default function CanvasPage() {
     }
   }, [selectedObjectId, canvasId, deleteObject]);
   
-  // Keyboard shortcuts for delete
+  const handleDuplicateObject = useCallback(async (objectId?: string) => {
+    // Use provided objectId or fall back to selectedObjectId
+    const targetObjectId = objectId || selectedObjectId;
+    
+    if (!targetObjectId || !canvasId) return;
+    
+    // Find the object to duplicate
+    const originalObject = objects.find(obj => obj.id === targetObjectId);
+    if (!originalObject) return;
+    
+    try {
+      // Create duplicate with offset position (+20px X, +20px Y)
+      const duplicateParams = {
+        type: originalObject.type,
+        x: originalObject.position.x + 20,
+        y: originalObject.position.y + 20,
+        width: originalObject.width,
+        height: originalObject.height,
+        fill: originalObject.fill,
+      };
+      
+      // Create the duplicate object
+      const newObject = await createObject(duplicateParams);
+      
+      // Auto-select the duplicate
+      if (newObject) {
+        setSelectedObjectId(newObject.id);
+      }
+    } catch (error) {
+      console.error('Failed to duplicate object:', error);
+    }
+  }, [selectedObjectId, canvasId, objects, createObject]);
+  
+  const handleCopyObject = useCallback((objectId?: string) => {
+    // Use provided objectId or fall back to selectedObjectId
+    const targetObjectId = objectId || selectedObjectId;
+    
+    if (!targetObjectId || !canvasId) return;
+    
+    // Find the object to copy
+    const objectToCopy = objects.find(obj => obj.id === targetObjectId);
+    if (!objectToCopy) return;
+    
+    // Copy to clipboard (localStorage)
+    const success = copyToClipboard(objectToCopy, canvasId);
+    if (success) {
+      console.log('Copied object to clipboard');
+    }
+  }, [selectedObjectId, canvasId, objects]);
+  
+  const handlePasteObject = useCallback(() => {
+    if (!canvasId || !user) return;
+    
+    // Get data from clipboard
+    const clipboardData = pasteFromClipboard();
+    if (!clipboardData) {
+      console.log('No valid clipboard data to paste');
+      return;
+    }
+    
+    // Enter paste mode - show preview
+    setIsPasteMode(true);
+    setTool('select'); // Switch to select tool to avoid conflicts
+    
+    console.log('Entered paste mode - click to place object');
+  }, [canvasId, user]);
+  
+  // Keyboard shortcuts for delete, duplicate, copy, and paste
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC key - cancel paste mode
+      if (e.key === 'Escape' && isPasteMode) {
+        setIsPasteMode(false);
+        setPastePreview(null);
+        console.log('Paste mode cancelled');
+        return;
+      }
+      
       // Delete or Backspace key
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObjectId) {
         // Prevent backspace from navigating back in browser
         e.preventDefault();
         handleDeleteSelected();
       }
+      
+      // Duplicate with Ctrl+D or Cmd+D (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedObjectId) {
+        e.preventDefault(); // Prevent browser bookmark dialog
+        handleDuplicateObject();
+      }
+      
+      // Copy with Ctrl+C or Cmd+C (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedObjectId) {
+        e.preventDefault(); // Prevent default browser copy
+        handleCopyObject();
+      }
+      
+      // Paste with Ctrl+V or Cmd+V (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault(); // Prevent default browser paste
+        handlePasteObject();
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedObjectId, handleDeleteSelected]);
+  }, [selectedObjectId, isPasteMode, handleDeleteSelected, handleDuplicateObject, handleCopyObject, handlePasteObject]);
   
   if (!canvasId) {
     return (
@@ -375,7 +541,7 @@ export default function CanvasPage() {
         <div className="flex-1 relative">
           <Canvas 
             canvasId={canvasId} 
-            tool={tool} 
+            tool={isPasteMode ? 'rectangle' : tool}  // Use crosshair cursor in paste mode
             onCanvasClick={handleCanvasClick}
             onCursorMove={handleCursorMove}
           >
@@ -415,6 +581,11 @@ export default function CanvasPage() {
                 <ShapePreviewComponent key={userId} preview={preview} />
               );
             })}
+            
+            {/* Render paste preview (local only) */}
+            {pastePreview && (
+              <ShapePreviewComponent preview={pastePreview} />
+            )}
           </Canvas>
           
           {/* Floating Toolbar */}
@@ -430,7 +601,7 @@ export default function CanvasPage() {
           )}
           
           {/* Context Menu */}
-          {canvasId && <ContextMenu canvasId={canvasId} />}
+          {canvasId && <ContextMenu canvasId={canvasId} onDuplicate={handleDuplicateObject} onCopy={handleCopyObject} />}
           
           {/* Properties Panel */}
           {canvasId && <PropertiesPanel canvasId={canvasId} />}

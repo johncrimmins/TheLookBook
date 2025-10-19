@@ -11,18 +11,59 @@
 - Real-time sync for all property changes
 - Clean UX pattern matching standard applications
 
+✅ **Feature 2: Duplicate Object - COMPLETE**
+- Keyboard shortcut (Ctrl+D / Cmd+D) to duplicate selected objects
+- Duplicate offset by +20px X, +20px Y from original
+- All properties copied (type, width, height, rotation, fill, opacity)
+- Auto-select duplicate for immediate manipulation
+- Context menu "Duplicate" action enabled with keyboard hint
+
 ✅ **Feature 3: Undo/Redo - COMPLETE**
 - Keyboard shortcuts (Ctrl+Z, Ctrl+Y) with toolbar buttons
 - Per-user history stacks (50-action depth, session-based)
 - All operations supported with proper drag position tracking
 - Critical safety net now in place
 
-🔄 **Next:** Feature 2 (Duplicate Object)
+✅ **Feature 4: Copy/Paste - COMPLETE (Enhanced)**
+- Keyboard shortcuts (Ctrl+C / Cmd+C to copy, Ctrl+V / Cmd+V to paste)
+- App-specific clipboard using localStorage for persistence
+- **Interactive paste with preview** - shows draggable preview like shape creation
+- Click to place pasted object at desired location
+- ESC to cancel paste mode
+- **Multiple pastes** - paste same object repeatedly (Ctrl+V multiple times)
+- Context menu "Copy" action enabled with keyboard hint
+- Auto-select pasted object for immediate manipulation
+- Reuses existing ShapePreview component (elegant, consistent)
+
+🔄 **Next:** Feature 5A (Z-Index)
 - Core platform complete and deployed (5 features + ShadCN UI)
-- Building: Duplicate, copy/paste, z-index, layers, multi-select
+- 4 of 7 Phase 1 features complete (57%)
 - Feature roadmap documented in `new-features-roadmap.md`
 
 ## Recent Changes
+- **Feature 4: Copy/Paste Enhanced (2025-10-19)**
+  - Keyboard shortcuts: Ctrl+C (copy), Ctrl+V (paste), Cmd+C/V on Mac
+  - Created shared clipboard utilities in `src/shared/lib/clipboard.ts`
+  - App-specific clipboard using localStorage (key: `collabcanvas_clipboard`)
+  - Clipboard persists across page refreshes and canvas sessions
+  - 24-hour data expiry with version validation
+  - **Interactive paste mode**: Ctrl+V enters preview mode with cursor-following preview
+  - **Multiple pastes**: Users can press Ctrl+V multiple times to paste repeatedly
+  - Click canvas to place pasted object at desired location (centered on cursor)
+  - ESC key cancels paste mode
+  - Crosshair cursor in paste mode for precision
+  - Reuses existing ShapePreview component (elegant, DRY)
+  - Context menu integration: "Copy" action enabled with keyboard hint
+  - Real-time sync via existing createObject infrastructure
+  - Build successful, zero linter errors
+- **Feature 2: Duplicate Object Complete (2025-10-19)**
+  - Keyboard shortcut implementation: Ctrl+D (Cmd+D on Mac)
+  - Duplicates selected object with +20px X/Y offset
+  - All properties copied: type, dimensions, rotation, fill, opacity
+  - Auto-selection of duplicate for immediate manipulation
+  - Context menu integration: "Duplicate" action enabled with keyboard hint
+  - Real-time sync via existing createObject infrastructure
+  - Build successful, zero linter errors
 - **Feature 3: Undo/Redo Complete (2025-10-19)**
   - Full undo/redo implementation with keyboard shortcuts and toolbar buttons
   - Per-user history stacks (50-action depth, session-based by design)
@@ -69,8 +110,10 @@
 
 ### Implementation Status
 - ✅ Feature 1 (Context Menu) - Complete
+- ✅ Feature 2 (Duplicate Object) - Complete
 - ✅ Feature 3 (Undo/Redo) - Complete
-- 🔄 Feature 2 (Duplicate Object) - Next priority
+- ✅ Feature 4 (Copy/Paste) - Complete
+- 🔄 Feature 5A (Z-Index) - Next priority
 - All PRDs follow vertical slice architecture
 - All integration points documented
 
@@ -108,5 +151,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - **AI Agent:** Deferred to post-Phase 2 (user preference)
 
 ---
-*Last Updated: 2025-10-19 - Feature 3 (Undo/Redo) complete with drag tracking fix*
+*Last Updated: 2025-10-19 - Feature 4 (Copy/Paste) enhanced with interactive preview*
 

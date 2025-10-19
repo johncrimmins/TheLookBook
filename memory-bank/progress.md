@@ -19,6 +19,8 @@
 ✅ **Memory Bank:** Optimized documentation with maintenance cursor rule
 ✅ **UI System:** ShadCN component library integrated across all features
 ✅ **Context Menu:** Right-click menu + properties panel with all object editors
+✅ **Duplicate Object:** Ctrl+D keyboard shortcut + context menu integration
+✅ **Copy/Paste:** Interactive paste with preview, multiple pastes, click-to-place
 
 ## What's Left to Build
 
@@ -54,21 +56,35 @@ All 5 core features plus UI system implemented:
   - [x] Selection state: Lives in objects store
   - [x] Layers: Part of objects feature
 
-- [ ] **Implementation** (2/7 complete)
+- [ ] **Implementation** (4/7 complete)
   - [x] Feature 1: Context Menu - COMPLETE
     - Traditional right-click action menu
     - Properties panel with color picker, numeric inputs
     - Advanced properties (position X/Y, opacity)
     - Real-time sync for all property changes
+  - [x] Feature 2: Duplicate Object - COMPLETE
+    - Keyboard shortcut: Ctrl+D (Cmd+D on Mac)
+    - +20px X/Y offset from original
+    - All properties copied accurately
+    - Auto-select duplicate for immediate use
+    - Context menu integration with keyboard hint
   - [x] Feature 3: Undo/Redo - COMPLETE
     - Keyboard shortcuts (Ctrl+Z, Ctrl+Y) with toolbar buttons
     - Per-user history stacks (50-action depth)
     - All operations supported (create, delete, move, resize, rotate, properties)
     - Session-based (clears on refresh - standard pattern)
     - Fixed drag position tracking for correct undo behavior
-  - [ ] Feature 2: Duplicate (1-2 days) - Next priority
-  - [ ] Feature 4: Copy/Paste (3-4 days)
-  - [ ] Feature 5A: Z-Index (2-3 days)
+  - [x] Feature 4: Copy/Paste - COMPLETE (Enhanced)
+    - Keyboard shortcuts: Ctrl+C (copy), Ctrl+V (paste)
+    - App-specific clipboard using localStorage
+    - Persists across page refreshes and canvas sessions
+    - **Interactive paste mode** with cursor-following preview
+    - **Multiple pastes** - Ctrl+V repeatedly for multiple copies
+    - Click to place at desired location (centered on cursor)
+    - ESC to cancel paste mode
+    - Context menu integration with keyboard hint
+    - Reuses ShapePreview component (elegant, DRY)
+  - [ ] Feature 5A: Z-Index (2-3 days) - Next priority
   - [ ] Feature 5B: Layer Panel (5-7 days)
   - [ ] Feature 6: Multi-Select (5-7 days)
 
@@ -80,8 +96,10 @@ All 5 core features plus UI system implemented:
 
 ## In Progress
 ✅ **Feature 1 Complete:** Context Menu with properties panel  
+✅ **Feature 2 Complete:** Duplicate Object with keyboard shortcut  
 ✅ **Feature 3 Complete:** Undo/Redo with keyboard shortcuts and drag tracking  
-📋 **Next:** Feature 2 implementation (Duplicate Object)
+✅ **Feature 4 Complete:** Copy/Paste with localStorage clipboard  
+📋 **Next:** Feature 5A implementation (Z-Index)
 
 ## Known Issues
 - Performance benchmarks need validation with real concurrent users
@@ -97,13 +115,44 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 - **Cursor Rules:** 14+ rules
 - **Core Features Complete:** 5 / 5 features (100%)
 - **Phase 1 Planning:** 7 / 7 PRDs complete (100%)
-- **Phase 1 Implementation:** 2 / 7 features complete (29%)
+- **Phase 1 Implementation:** 4 / 7 features complete (57%)
 - **UI Components:** 8 ShadCN components installed (Button, Input, Label, Card, Avatar, Badge, Separator, Popover)
 - **Shape Types:** 2 (Rectangle, Circle)
 - **Custom Hooks:** 5 (useAuth, usePresence, useCanvas, useObjects, useShapeInteractions)
 - **Deployment Status:** ✅ Deployed to Vercel with secured databases
 
 ## Recent Updates
+
+### 2025-10-19 - Feature 4: Copy/Paste Enhanced ✅
+- ✅ Keyboard shortcuts: Ctrl+C (copy), Ctrl+V (paste), Cmd+C/V on Mac
+- ✅ Created shared clipboard utilities: `src/shared/lib/clipboard.ts`
+- ✅ App-specific clipboard using localStorage (key: `collabcanvas_clipboard`)
+- ✅ Clipboard data structure with version control and timestamp
+- ✅ Persists across page refreshes and canvas sessions (same browser)
+- ✅ 24-hour automatic data expiry with validation
+- ✅ **Interactive paste mode**: Ctrl+V enters preview mode with cursor-following preview
+- ✅ **Multiple pastes**: Press Ctrl+V repeatedly to paste same object multiple times
+- ✅ Click canvas to place pasted object at desired location (centered on cursor)
+- ✅ ESC key cancels paste mode
+- ✅ Crosshair cursor in paste mode for precision
+- ✅ Reuses existing ShapePreview component (elegant, DRY, consistent)
+- ✅ Auto-selection of pasted object for immediate manipulation
+- ✅ Context menu integration: "Copy" action with keyboard hint (Ctrl+C)
+- ✅ Real-time sync via existing createObject infrastructure
+- ✅ Graceful handling of invalid/corrupted clipboard data
+- ✅ Build successful, zero linter errors
+- ✅ **Status:** Feature 4 complete with enhanced UX, ready for Feature 5A (Z-Index)
+
+### 2025-10-19 - Feature 2: Duplicate Object Complete ✅
+- ✅ Keyboard shortcut implementation: Ctrl+D (Windows/Linux), Cmd+D (Mac)
+- ✅ Duplicate offset by +20px X, +20px Y from original position
+- ✅ All object properties copied: type, width, height, rotation, fill, opacity
+- ✅ Auto-selection of duplicate for immediate manipulation
+- ✅ Context menu integration: "Duplicate" action enabled with keyboard hint (Ctrl+D)
+- ✅ Real-time sync via existing createObject infrastructure
+- ✅ Works with all object types (rectangle, circle)
+- ✅ Build successful, zero linter errors
+- ✅ **Status:** Feature 2 complete, ready for Feature 4 (Copy/Paste)
 
 ### 2025-10-19 - Feature 3: Undo/Redo Complete ✅
 - ✅ Per-user history stacks with 50-action depth
@@ -156,10 +205,12 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 5. ✅ **Create Phase 1 roadmap** - Roadmap and all 7 PRDs complete
 6. ✅ **Architectural simplifications** - Clipboard utilities, selection in objects store, layers in objects
 7. ✅ **Implement Feature 1** - Right-click context menu complete
-8. ✅ **Implement Feature 3** - Undo/redo with drag tracking complete
-9. **Implement Feature 2** - Duplicate object functionality
-10. **Continue Phase 1** - Copy/paste, z-index, layers, multi-select
+8. ✅ **Implement Feature 2** - Duplicate object functionality complete
+9. ✅ **Implement Feature 3** - Undo/redo with drag tracking complete
+10. ✅ **Implement Feature 4** - Copy/paste functionality complete
+11. **Implement Feature 5A** - Z-index functionality
+12. **Continue Phase 1** - Layer panel, multi-select
 
 ---
-*Last Updated: 2025-10-19 - Feature 3 (Undo/Redo) complete with drag position tracking fix*
+*Last Updated: 2025-10-19 - Feature 4 (Copy/Paste) enhanced with interactive preview*
 
