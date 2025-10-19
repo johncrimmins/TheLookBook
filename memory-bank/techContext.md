@@ -144,12 +144,10 @@ src/
 
 ## Development Workflow
 
-### Build Strategy (Vertical Slicing)
-1. ✅ Multiplayer Cursor Sync (auth + presence + RTDB)
-2. ✅ Multiplayer Object Sync (canvas + objects + Firestore)
-3. ✅ Transformations (move, resize, rotate)
-4. ✅ UI Component System (ShadCN + Radix UI + Tailwind)
-5. 🔄 AI Agent (LangChain + OpenAI function calling)
+### Build Strategy
+1. ✅ Core Platform (auth, presence, canvas, objects, history)
+2. 🔄 Phase 1 Canvas Improvements (manipulation features, UI refactor)
+3. 📋 Phase 2 AI Agent (LangChain + OpenAI)
 
 ## Conflict Resolution Strategy
 **Approach:** Last-Write-Wins (LWW)
@@ -166,20 +164,13 @@ src/
 - Konva layer optimization (separate cursor layer)
 - React memo for expensive re-renders
 
-## Known Technical Considerations
-- Firebase RTDB has connection limits (track quota)
-- Vercel serverless function cold starts (AI agent)
-- Canvas rendering performance with many objects
-- Konva.js learning curve for advanced features
-- LangChain tool calling requires careful schema design
-
-## Security Best Practices
-- Never expose Firebase config secrets
-- Use Firebase security rules for access control
+## Key Considerations
+- Firebase RTDB connection limits (monitor quota)
+- Canvas rendering performance with 500+ objects
+- Vercel serverless cold starts (AI agent phase)
+- Security: Firebase rules, input validation, cost monitoring
 - Validate all user input
 - Sanitize AI-generated commands
-- Rate limit AI agent calls (post-MVP)
-- Monitor costs (OpenAI, Firebase usage)
 
 ---
 *Last Updated: 2025-10-19 - Added ShadCN UI dependencies*

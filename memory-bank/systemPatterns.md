@@ -156,25 +156,11 @@
 - **Example:** See @src/features/objects/hooks/useShapeInteractions.ts (hook) and @src/features/objects/components/Rectangle.tsx (usage)
 
 ### Pattern 7: ShadCN Component Pattern
-- **Purpose:** Provide reusable, accessible, and professionally styled UI components
-- **Implementation:** ShadCN components built on Radix UI primitives with Tailwind styling
-- **Location:** All UI components live in `src/shared/components/ui/`
-- **Composition:** Components use class variance authority (CVA) for variants
-- **Theming:** CSS variables in globals.css, mapped to Tailwind in tailwind.config.ts
-- **Benefits:** 
-  - Consistent design system across features
-  - Accessible by default (ARIA compliant)
-  - Easily customizable with Tailwind classes
-  - Copy-paste ownership (components are in your codebase)
-- **Key Components:**
-  - Button (variants: default, ghost, outline, secondary, link)
-  - Input, Label (form elements)
-  - Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
-  - Avatar, AvatarImage, AvatarFallback
-  - Badge (status indicators)
-  - Separator (dividers)
+- **Purpose:** Reusable, accessible UI components
+- **Implementation:** Built on Radix UI + Tailwind, located in `src/shared/components/ui/`
+- **Benefits:** Consistent design, ARIA compliant, easily customizable
+- **Key Components:** Button, Input, Label, Card, Avatar, Badge, Separator, Popover
 - **Example:** `import { Button } from '@/shared/components/ui/button'`
-- **Documentation:** https://ui.shadcn.com
 
 ## Component Relationships
 
@@ -236,7 +222,7 @@ User drags → Local update (optimistic) → RTDB throttle (16ms) → Firestore 
 - One component per file
 - Co-locate tests with implementation (e.g., `usePresence.test.ts`)
 - Barrel exports from feature index files
-- Shared utilities in `src/shared/`
+- Shared utilities in `src/shared/` - ruthlessly avoid overpolluting; keep modularity and only share utilities if truly shared across 2+ components
 
 ### Code Style
 - TypeScript strict mode enabled
@@ -251,11 +237,11 @@ User drags → Local update (optimistic) → RTDB throttle (16ms) → Firestore 
 - Inline comments for complex logic
 - Architecture decisions documented in this file
 
-### Testing Strategy (Future)
-- Unit tests for services and hooks
-- Integration tests for feature interactions
-- E2E tests for critical user flows
-- Performance benchmarks for sync latency
+### Code Standards
+- TypeScript strict mode, ESLint + Prettier
+- Functional components with hooks
+- One component per file, barrel exports from feature index
+- JSDoc for public APIs, inline comments for complex logic
 
 ---
 *Last Updated: 2025-10-19 (Added Pattern 7: ShadCN Component Pattern)*

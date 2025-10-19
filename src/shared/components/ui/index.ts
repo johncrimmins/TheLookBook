@@ -13,4 +13,11 @@ export {
 export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 export { Badge, badgeVariants } from './badge';
 export { Separator } from './separator';
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from './tooltip';
+export { ScrollArea, ScrollBar } from './scroll-area';
 

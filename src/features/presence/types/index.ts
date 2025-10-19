@@ -25,7 +25,12 @@ export interface PresenceUser {
 /**
  * Generate a consistent color for a user based on their ID
  */
-export function generateUserColor(userId: string): string {
+export function generateUserColor(userId: string | undefined): string {
+  // Return default color if userId is undefined or empty
+  if (!userId) {
+    return 'hsl(200, 70%, 50%)'; // Default blue color
+  }
+
   // Hash the user ID to get a consistent color
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
@@ -35,6 +40,25 @@ export function generateUserColor(userId: string): string {
   // Convert to HSL color with fixed saturation and lightness for vibrant colors
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue}, 70%, 50%)`;
+}
+
+/**
+ * Get user initials for avatar display
+ * Safely handles undefined/null displayName with fallbacks
+ */
+export function getUserInitials(displayName: string | undefined, email?: string | undefined): string {
+  // Try displayName first
+  if (displayName && displayName.length > 0) {
+    return displayName.charAt(0).toUpperCase();
+  }
+  
+  // Fallback to email's first character
+  if (email && email.length > 0) {
+    return email.charAt(0).toUpperCase();
+  }
+  
+  // Final fallback
+  return '?';
 }
 
 /**

@@ -1,3 +1,77 @@
+---
+alwaysApply: false
+---
+Description: Memory Bank Maintenance - Condense and clean up memory bank files
+Globs: memory-bank/**/*.md
+
+# Memory Bank Condensing Guidelines
+
+## Trigger
+When files exceed these thresholds:
+- activeContext.md: >100 lines
+- progress.md: >150 lines  
+- systemPatterns.md: >300 lines
+- When user requests a memory bank cleanup or to clean up the memory bank
+
+## What to Remove
+
+### progress.md (highest priority for cleanup)
+- ❌ Detailed checkboxes of completed tasks → ✅ Summary statements
+- ❌ Milestone entries older than last 2 updates → ✅ Keep only last 2 updates
+- ❌ Multiple "Recent Updates" sections → ✅ Keep only last 2 updates
+
+### activeContext.md
+- ❌ Long completed task checklists → ✅ "Phase X Complete" summary
+- ❌ Resolved decisions already in systemPatterns.md → ✅ Reference systemPatterns
+- ❌ Historical "Next Steps" → ✅ Only current next steps
+
+### systemPatterns.md
+- ❌ Extensive code examples → ✅ Use decorators as references (e.g., @src/features/auth/hooks/useAuth.ts)
+- ❌ ASCII diagrams after patterns are established → ✅ Bullet summaries
+- ⚠️ Keep: Architecture decisions (these are permanent)
+
+### Cross-File Duplication
+- Performance targets → techContext.md only
+- Tech stack → techContext.md only
+- Success criteria → projectbrief.md only
+
+## What to Always Keep
+
+✅ Current phase and immediate next steps
+✅ Active decisions and open questions
+✅ Known issues and blockers
+✅ Architecture decisions and rationale
+✅ Last 2 meaningful updates only
+✅ Project constraints and requirements
+
+## Condensing Approach
+
+1. **Completed tasks**: Convert detailed checklists to summary statements
+2. **Old updates**: Keep only last 2 updates; older ones can be summarized in 1-2 sentences if needed
+3. **Redundant info**: Remove duplicates, keep single source of truth
+4. **Code examples**: Use decorators to reference actual implementation (@filepath)
+5. **Historical decisions**: Keep decision + rationale, remove old discussion
+
+## Target Line Counts
+- projectbrief.md: ~100 lines
+- productContext.md: ~80 lines
+- activeContext.md: ~80 lines
+- systemPatterns.md: ~250 lines
+- techContext.md: ~150 lines
+- progress.md: ~120 lines
+
+## Example Decorator Usage
+
+Instead of full code blocks:
+```
+See implementation: @src/features/presence/hooks/usePresence.ts
+Key pattern: Service layer encapsulates Firebase calls
+```
+
+Instead of:
+```typescript
+// 50 lines of example code...
+```
 Description: Memory Bank Maintenance - Condense and clean up memory bank files
 Globs: memory-bank/**/*.md
 

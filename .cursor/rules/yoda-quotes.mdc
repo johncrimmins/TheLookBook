@@ -1,8 +1,6 @@
 ---
-description: End each Cursor chat with a wise, Yoda-style inspirational quote
-globs: **/*.{md,txt}
+alwaysApply: true
 ---
-
 # Yoda-Style Quote Endings
 
 // Description: End each Cursor chat with a wise, Yoda-style inspirational quote

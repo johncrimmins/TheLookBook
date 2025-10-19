@@ -16,15 +16,11 @@ CollabCanvas is a real-time collaboration app enabling users to login, create an
 3. **Production Ready** - Deployed, publicly accessible, supporting 5+ concurrent users
 
 ## Core Platform Features (Complete) ✅
-- ✅ Basic canvas with pan/zoom
-- ✅ Two shape types (rectangle and circle)
-- ✅ Ability to create, move, and delete objects
-- ✅ Real-time sync between 2+ users
-- ✅ Multiplayer cursors with name labels
-- ✅ Presence awareness (who's online)
-- ✅ User authentication (users have accounts/names)
-- ✅ Deployed and publicly accessible
-- ✅ ShadCN UI component system integrated
+All 5 core features deployed:
+- Auth, presence, canvas, objects, history
+- Real-time sync (<100ms objects, <50ms cursors)
+- ShadCN UI component system
+- Deployed to Vercel, publicly accessible
 
 ## Key Requirements
 
@@ -42,11 +38,8 @@ CollabCanvas is a real-time collaboration app enabling users to login, create an
 - Shared AI state across all users
 
 ### Phase 3: Advanced Features (Future)
-- Undo/redo with keyboard shortcuts
-- Object grouping/ungrouping
-- Layers panel with drag-to-reorder
-- Alignment tools
-- AI Agent advanced commands / improvements
+- Object grouping, alignment tools
+- AI Agent advanced commands
 
 ## Success Criteria
 
@@ -79,33 +72,21 @@ CollabCanvas is a real-time collaboration app enabling users to login, create an
 ## Scope
 
 ### In Scope (Complete) ✅
-- User authentication (Firebase Auth)
-- Real-time cursor sync (Firebase RTDB)
-- Real-time object sync (Firebase RTDB + Firestore persistence)
-- User presence awareness
-- Basic canvas with pan/zoom (Konva.js)
-- Multiple shape types with move capability
-- Connection status indicators
-- Deployment (Vercel)
-- ShadCN UI component integration
+- Core platform: Auth, presence, canvas, objects, history
+- Real-time sync (RTDB + Firestore)
+- ShadCN UI, deployment to Vercel
 
 ### In Scope (In Development)
-- AI Agent with LangChain + OpenAI
-- 8+ command types (creation, manipulation, layout, complex)
-- Multi-step complex operations
-- LangSmith observability
-- Additional shape types (rectangles, circles, text, lines)
-- Transform operations (resize, rotate)
-- Multi-select and layer management
+- Phase 1: Toolbar refactor, layers panel, multi-select
+- Phase 2: AI Agent (LangChain + OpenAI, 8+ command types)
 
 ### Out of Scope (Future)
-- Undo/redo
-- Object grouping
-- Layers panel
-- Alignment tools
-- Auto-layout
-- Agent enhancements
+- Lookbooks feature (project repository for canvases)
+  - Save, open, rename canvases
+  - Share canvases between users
+  - Ownership and collaboration management
+- AI Agent enhancements
 
 ---
-*Last Updated: 2025-10-19 - Added ShadCN UI integration*
+*Last Updated: 2025-10-19 - Memory bank cleanup*
 

@@ -6,19 +6,16 @@ CollabCanvas enables teams to collaborate on visual design and planning in real-
 ## Problems Solved
 
 1. **Multiplayer Design Collaboration**
-   - Traditional design tools lack real-time collaboration infrastructure
-   - Users need to see each other's cursors and edits instantly
-   - Conflict resolution when multiple people edit simultaneously
+   - Real-time collaboration infrastructure with instant cursor/edit sync
+   - Conflict resolution for simultaneous edits
 
 2. **Complex Canvas Manipulation**
-   - Creating layouts manually is time-consuming
-   - Repetitive positioning and alignment tasks
-   - AI agent allows natural language commands to manipulate canvas
+   - AI agent (future) allows natural language commands
+   - Automates repetitive positioning and layout tasks
 
 3. **State Persistence & Reliability**
-   - Work shouldn't be lost on disconnects
-   - Canvas state must persist even when all users leave
-   - Reconnection should be seamless and automatic
+   - Canvas state persists through disconnects
+   - Seamless automatic reconnection
 
 ## How It Works
 
@@ -36,24 +33,19 @@ CollabCanvas enables teams to collaborate on visual design and planning in real-
 
 ### Core Features
 
-#### Platform Features (Complete) ✅
-- **Authentication:** Secure user accounts with Firebase Auth
-- **Real-Time Cursors:** See all collaborators' cursors with name labels
-- **Presence Awareness:** Know who's online and active
-- **Canvas Operations:** Pan, zoom, create and move shapes
-- **Object Sync:** Instant propagation of all canvas changes
-- **State Persistence:** Canvas survives disconnects and page refreshes
-- **Modern UI:** Professional design system with ShadCN components
+**Platform (Complete) ✅**
+- Auth, real-time cursors, presence awareness
+- Canvas operations (pan, zoom, shapes)
+- Object sync (<100ms), state persistence
+- ShadCN UI design system
 
-#### Advanced Features (In Development)
-- **AI Agent:** Natural language canvas manipulation
-  - Creation: "Create a red circle at position 100, 200"
-  - Manipulation: "Move the blue rectangle to the center"
-  - Layout: "Arrange these shapes in a horizontal row"
-  - Complex: "Create a login form with username and password fields"
-- **Advanced Shapes:** Rectangles, circles, text, lines with styling
-- **Transformations:** Resize, rotate, duplicate, delete
-- **Multi-Select:** Shift-click or drag-to-select multiple objects
+**Phase 1 (In Progress)**
+- Toolbar refactor, layers panel, multi-select
+
+**Future**
+- AI agent: Natural language canvas manipulation
+- Advanced shapes: text, lines, styling
+- Complex layouts via AI commands
 
 ## User Experience Goals
 
@@ -63,29 +55,25 @@ CollabCanvas enables teams to collaborate on visual design and planning in real-
 - Anyone needing real-time visual collaboration
 - Users wanting to control design tools with natural language
 
-### User Journey (Core Platform)
-1. User signs in with modern, polished auth interface
-2. Lands on canvas with smooth pan/zoom and professional UI
-3. Sees other users' cursors moving in real-time with styled indicators
-4. Creates shapes using intuitive toolbar buttons
-5. Drags objects around with zero lag and instant feedback
-6. Refreshes page → returns to exact canvas state
-7. Collaborates seamlessly with 5+ users using consistent UI components
+### User Journey
+**Core Platform (Complete):**
+1. Sign in → land on canvas with smooth pan/zoom
+2. See other users' cursors in real-time
+3. Create/drag shapes with zero lag
+4. Canvas state persists through refreshes
+5. Collaborate seamlessly with 5+ users
 
-### User Journey (With AI Agent)
-1. Types "Create a login form" in AI chat
-2. Sees AI plan the steps (username field, password field, submit button)
-3. Watches elements appear on canvas in real-time
-4. All collaborators see the same AI-generated results
-5. Can refine with follow-up commands: "Make it larger"
+**With AI Agent (Future):**
+- Natural language commands create complex layouts
+- All users see AI-generated results in real-time
+- Iterative refinement with follow-up commands
 
 ### Design Principles
-1. **Performance First:** Sub-50ms cursor sync, sub-100ms object sync
-2. **Reliability:** Never lose work, handle disconnects gracefully
-3. **Simplicity:** MVP focuses on core multiplayer infrastructure
-4. **Scalability:** Architecture supports future AI and advanced features
-5. **Delight:** Smooth animations, clear feedback, professional feel
-
+1. **Performance First:** <50ms cursor, <100ms object sync
+2. **Reliability:** Never lose work, graceful disconnects
+3. **Scalability:** Architecture supports AI and advanced features
+4. **Delight:** Smooth animations, clear feedback, professional feel
+5. **Simplicity & Elegance:** Simple, elegant architecture with elegant implementations
 ## Value Proposition
 
 **Core Platform:** A rock-solid collaborative canvas with professional UI that proves the multiplayer infrastructure works flawlessly. Production-ready foundation for advanced features.

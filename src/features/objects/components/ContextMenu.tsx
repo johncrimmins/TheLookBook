@@ -7,6 +7,7 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Button } from '@/shared/components/ui/button';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
+import { useObjectsStore } from '../lib/objectsStore';
 
 interface ContextMenuProps {
   canvasId: string;
@@ -18,6 +19,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   const contextMenu = useCanvasStore((state) => state.contextMenu);
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const setPropertiesPanel = useCanvasStore((state) => state.setPropertiesPanel);
+  const setRightSidebarOpen = useObjectsStore((state) => state.setRightSidebarOpen);
   const { objectsMap, deleteObject, bringToFront, sendToBack } = useObjects(canvasId);
 
   // Close menu on ESC key
@@ -57,7 +59,10 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   };
 
   const handleFormatShape = () => {
+    // Open properties panel in the right sidebar
     setPropertiesPanel({ objectId: contextMenu.objectId });
+    // Auto-open the right sidebar so user can see the properties
+    setRightSidebarOpen(true);
     setContextMenu(null);
   };
 

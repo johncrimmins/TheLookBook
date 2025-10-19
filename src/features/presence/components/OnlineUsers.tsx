@@ -1,7 +1,7 @@
 // Online users component - displays list of users on canvas
 'use client';
 
-import { PresenceUser, generateUserColor, formatTimestamp } from '../types';
+import { PresenceUser, generateUserColor, formatTimestamp, getUserInitials } from '../types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -39,19 +39,19 @@ export function OnlineUsers({ presence, currentUserId }: OnlineUsersProps) {
               <Avatar className="h-8 w-8">
                 <AvatarImage 
                   src={user.photoURL || undefined} 
-                  alt={user.displayName}
+                  alt={user.displayName || 'User'}
                 />
                 <AvatarFallback
                   className="text-white font-medium text-sm"
                   style={{ backgroundColor: color }}
                 >
-                  {user.displayName.charAt(0).toUpperCase()}
+                  {getUserInitials(user.displayName, user.id)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
-                  {user.displayName}
+                  {user.displayName || 'Anonymous User'}
                   {isCurrentUser && (
                     <span className="ml-1 text-xs text-muted-foreground">(you)</span>
                   )}
