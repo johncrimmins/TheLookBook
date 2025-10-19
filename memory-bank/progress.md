@@ -18,6 +18,7 @@
 ✅ **Delete Objects:** Keyboard shortcuts with real-time sync
 ✅ **Memory Bank:** Optimized documentation with maintenance cursor rule
 ✅ **UI System:** ShadCN component library integrated across all features
+✅ **Context Menu:** Right-click menu + properties panel with all object editors
 
 ## What's Left to Build
 
@@ -53,10 +54,19 @@ All 5 core features plus UI system implemented:
   - [x] Selection state: Lives in objects store
   - [x] Layers: Part of objects feature
 
-- [ ] **Implementation** (Not started)
-  - [ ] Feature 1: Context Menu (6-7 days)
-  - [ ] Feature 3: Undo/Redo (5-7 days) - Critical safety net
-  - [ ] Feature 2: Duplicate (1-2 days)
+- [ ] **Implementation** (2/7 complete)
+  - [x] Feature 1: Context Menu - COMPLETE
+    - Traditional right-click action menu
+    - Properties panel with color picker, numeric inputs
+    - Advanced properties (position X/Y, opacity)
+    - Real-time sync for all property changes
+  - [x] Feature 3: Undo/Redo - COMPLETE
+    - Keyboard shortcuts (Ctrl+Z, Ctrl+Y) with toolbar buttons
+    - Per-user history stacks (50-action depth)
+    - All operations supported (create, delete, move, resize, rotate, properties)
+    - Session-based (clears on refresh - standard pattern)
+    - Fixed drag position tracking for correct undo behavior
+  - [ ] Feature 2: Duplicate (1-2 days) - Next priority
   - [ ] Feature 4: Copy/Paste (3-4 days)
   - [ ] Feature 5A: Z-Index (2-3 days)
   - [ ] Feature 5B: Layer Panel (5-7 days)
@@ -69,8 +79,9 @@ All 5 core features plus UI system implemented:
 - [ ] Undo/redo for AI commands
 
 ## In Progress
-✅ **Planning Complete:** All 7 Phase 1 PRDs created with architectural simplifications  
-📋 **Next:** Begin Feature 1 implementation (Context Menu)
+✅ **Feature 1 Complete:** Context Menu with properties panel  
+✅ **Feature 3 Complete:** Undo/Redo with keyboard shortcuts and drag tracking  
+📋 **Next:** Feature 2 implementation (Duplicate Object)
 
 ## Known Issues
 - Performance benchmarks need validation with real concurrent users
@@ -86,13 +97,37 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 - **Cursor Rules:** 14+ rules
 - **Core Features Complete:** 5 / 5 features (100%)
 - **Phase 1 Planning:** 7 / 7 PRDs complete (100%)
-- **Phase 1 Implementation:** 0 / 7 features complete (0%)
-- **UI Components:** 7 ShadCN components installed and integrated
+- **Phase 1 Implementation:** 2 / 7 features complete (29%)
+- **UI Components:** 8 ShadCN components installed (Button, Input, Label, Card, Avatar, Badge, Separator, Popover)
 - **Shape Types:** 2 (Rectangle, Circle)
 - **Custom Hooks:** 5 (useAuth, usePresence, useCanvas, useObjects, useShapeInteractions)
 - **Deployment Status:** ✅ Deployed to Vercel with secured databases
 
 ## Recent Updates
+
+### 2025-10-19 - Feature 3: Undo/Redo Complete ✅
+- ✅ Per-user history stacks with 50-action depth
+- ✅ Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y/Ctrl+Shift+Z (redo)
+- ✅ Toolbar buttons with disabled states and tooltips
+- ✅ All operations supported: create, delete, update, property changes
+- ✅ Fixed drag position tracking (captures position before drag starts)
+- ✅ Session-based history (intentional design - clears on refresh)
+- ✅ New feature: `src/features/history/` with types, store, hooks
+- ✅ Integration: History recording in all object operations
+- ✅ Build successful, fully tested
+- ✅ **Status:** Feature 3 complete, ready for Feature 2 (Duplicate)
+
+### 2025-10-19 - Feature 1: Context Menu Complete ✅
+- ✅ Refactored to traditional UX pattern (right-click → action menu → properties panel)
+- ✅ Traditional context menu with Format Shape, Delete, and placeholder actions
+- ✅ Properties panel slides in from right (320px wide)
+- ✅ Color picker using ShadCN Popover with native color input
+- ✅ Numeric property inputs (width, height, rotation, position X/Y, opacity)
+- ✅ Real-time sync for all property changes via updateObject
+- ✅ Added opacity field to CanvasObject type (0-1 range)
+- ✅ ESC key closes both menu and panel, click outside closes
+- ✅ Components: ContextMenu, PropertiesPanel, PropertyInput, ColorPicker
+- ✅ **Status:** Feature 1 complete, ready for Feature 3 (Undo/Redo)
 
 ### 2025-10-19 - All Phase 1 PRDs Complete 📋
 - ✅ Pivoted focus from AI agent to canvas improvements (user-driven decision)
@@ -120,9 +155,11 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 4. ✅ **Integrate ShadCN UI** - Component system standardized across platform
 5. ✅ **Create Phase 1 roadmap** - Roadmap and all 7 PRDs complete
 6. ✅ **Architectural simplifications** - Clipboard utilities, selection in objects store, layers in objects
-7. **Implement Feature 1** - Right-click context menu (6-7 days)
-8. **Continue Phase 1** - Undo/redo, duplicate, copy/paste, z-index, layers, multi-select
+7. ✅ **Implement Feature 1** - Right-click context menu complete
+8. ✅ **Implement Feature 3** - Undo/redo with drag tracking complete
+9. **Implement Feature 2** - Duplicate object functionality
+10. **Continue Phase 1** - Copy/paste, z-index, layers, multi-select
 
 ---
-*Last Updated: 2025-10-19 - All Phase 1 PRDs complete with architectural simplifications*
+*Last Updated: 2025-10-19 - Feature 3 (Undo/Redo) complete with drag position tracking fix*
 

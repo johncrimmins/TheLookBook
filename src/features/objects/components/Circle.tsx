@@ -11,11 +11,13 @@ interface CircleProps {
   object: CanvasObject;
   isSelected?: boolean;
   onSelect?: () => void;
+  onDragStart?: () => void;
   onDragMove?: (position: { x: number; y: number }) => void;
   onDragEnd?: (position: { x: number; y: number }) => void;
   onTransformStart?: () => void;
   onTransform?: (updates: Partial<CanvasObject>) => void;
   onTransformEnd?: (updates: Partial<CanvasObject>) => void;
+  onContextMenu?: (position: { x: number; y: number }) => void;
   isBeingTransformedByOther?: boolean;
   transformingUserName?: string;
 }
@@ -24,11 +26,13 @@ export function Circle({
   object,
   isSelected = false,
   onSelect,
+  onDragStart,
   onDragMove,
   onDragEnd,
   onTransformStart,
   onTransform,
   onTransformEnd,
+  onContextMenu,
   isBeingTransformedByOther,
   transformingUserName,
 }: CircleProps) {
@@ -51,11 +55,13 @@ export function Circle({
     objectId: object.id,
     isSelected,
     onSelect,
+    onDragStart,
     onDragMove,
     onDragEnd,
     onTransformStart,
     onTransform,
     onTransformEnd,
+    onContextMenu,
     positionTransform,
     isBeingTransformedByOther,
     transformingUserName,
@@ -69,6 +75,7 @@ export function Circle({
         y={object.position.y + radius}
         radius={radius}
         fill={object.fill}
+        opacity={object.opacity}
         draggable
         {...handlers}
       />

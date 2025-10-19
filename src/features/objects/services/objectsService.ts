@@ -117,7 +117,7 @@ export async function getObject(canvasId: string, objectId: string): Promise<Can
 /**
  * Broadcast object update via RTDB (for real-time sync)
  */
-async function broadcastObjectUpdate(canvasId: string, update: ObjectUpdate): Promise<void> {
+export async function broadcastObjectUpdate(canvasId: string, update: ObjectUpdate): Promise<void> {
   const rtdb = getRTDB();
   const deltaRef = ref(rtdb, `deltas/${canvasId}/${update.id}`);
   await set(deltaRef, update);

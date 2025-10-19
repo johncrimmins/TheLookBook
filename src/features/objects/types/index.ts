@@ -12,6 +12,7 @@ export interface CanvasObject {
   height: number;
   rotation: number;
   fill: string;
+  opacity: number; // 0-1 range (default 1.0)
   createdBy: string;
   createdAt: number;
   updatedAt: number;

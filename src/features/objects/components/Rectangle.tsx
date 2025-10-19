@@ -10,11 +10,13 @@ interface RectangleProps {
   object: CanvasObject;
   isSelected?: boolean;
   onSelect?: () => void;
+  onDragStart?: () => void;
   onDragMove?: (position: { x: number; y: number }) => void;
   onDragEnd?: (position: { x: number; y: number }) => void;
   onTransformStart?: () => void;
   onTransform?: (updates: Partial<CanvasObject>) => void;
   onTransformEnd?: (updates: Partial<CanvasObject>) => void;
+  onContextMenu?: (position: { x: number; y: number }) => void;
   isBeingTransformedByOther?: boolean;
   transformingUserName?: string;
 }
@@ -23,11 +25,13 @@ export function Rectangle({
   object,
   isSelected = false,
   onSelect,
+  onDragStart,
   onDragMove,
   onDragEnd,
   onTransformStart,
   onTransform,
   onTransformEnd,
+  onContextMenu,
   isBeingTransformedByOther,
   transformingUserName,
 }: RectangleProps) {
@@ -35,11 +39,13 @@ export function Rectangle({
     objectId: object.id,
     isSelected,
     onSelect,
+    onDragStart,
     onDragMove,
     onDragEnd,
     onTransformStart,
     onTransform,
     onTransformEnd,
+    onContextMenu,
     isBeingTransformedByOther,
     transformingUserName,
   });
@@ -53,6 +59,7 @@ export function Rectangle({
         width={object.width}
         height={object.height}
         fill={object.fill}
+        opacity={object.opacity}
         rotation={object.rotation}
         draggable
         {...handlers}

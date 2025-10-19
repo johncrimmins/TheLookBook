@@ -5,26 +5,49 @@
 **Date:** 2025-10-19
 
 ### Immediate Tasks
-🔄 **Phase 1: Canvas Improvements** - Enhancing object manipulation with industry-standard features
+✅ **Feature 1: Context Menu - COMPLETE**
+- Traditional right-click context menu with actions (Format Shape, Delete, placeholders)
+- Properties panel slides in from right with all property editors
+- Real-time sync for all property changes
+- Clean UX pattern matching standard applications
+
+✅ **Feature 3: Undo/Redo - COMPLETE**
+- Keyboard shortcuts (Ctrl+Z, Ctrl+Y) with toolbar buttons
+- Per-user history stacks (50-action depth, session-based)
+- All operations supported with proper drag position tracking
+- Critical safety net now in place
+
+🔄 **Next:** Feature 2 (Duplicate Object)
 - Core platform complete and deployed (5 features + ShadCN UI)
-- Focus shifted from AI agent to user experience improvements
-- Building: Right-click context menu, duplicate, undo/redo, copy/paste, layers, multi-select
+- Building: Duplicate, copy/paste, z-index, layers, multi-select
 - Feature roadmap documented in `new-features-roadmap.md`
-- Feature PRD for Context Menu complete: `docs/feature-prd-context-menu.md`
 
 ## Recent Changes
+- **Feature 3: Undo/Redo Complete (2025-10-19)**
+  - Full undo/redo implementation with keyboard shortcuts and toolbar buttons
+  - Per-user history stacks (50-action depth, session-based by design)
+  - All operations supported: create, delete, move, resize, rotate, property changes
+  - Fixed critical bug: Drag position tracking (captures position before drag starts)
+  - New history feature: `src/features/history/` with types, store, hooks
+  - Integration: `startObjectDrag()` and `finishObjectDrag()` for correct history recording
+  - Build successful, fully tested and working
+- **Feature 1: Context Menu Complete (2025-10-19)**
+  - Refactored to traditional UX pattern (right-click → action menu → properties panel)
+  - Context menu with Format Shape, Delete, and placeholder actions
+  - Properties panel slides in from right with all editors
+  - Color picker (Popover component), numeric inputs for all properties
+  - Advanced properties: Position X/Y, Opacity (0-100%)
+  - Real-time sync with existing updateObject infrastructure
+  - Added opacity field to CanvasObject type
 - **All Phase 1 PRDs Complete (2025-10-19)**
   - Created all 7 feature PRDs in `/tasks/` folder (1,754 lines total)
   - Architectural simplifications: Clipboard as utilities, selection in objects store, layers in objects feature
   - Roadmap documented in `new-features-roadmap.md`
   - Implementation order: Context Menu → Undo/Redo → Duplicate → Copy/Paste → Z-Index → Layer Panel → Multi-Select
-  - All PRDs under 300 lines, no verbose testing sections
 - **ShadCN UI Integration Complete (2025-10-19)**
   - Integrated ShadCN component library with Radix UI primitives
-  - Refactored all UI components (AuthForm, UserProfile, OnlineUsers, CanvasToolbar, Canvas page)
-  - Created barrel export for easy component importing
-  - Updated Tailwind config with ShadCN theme variables
-  - Professional, consistent design system across all features
+  - Added Popover component for color picker
+  - 8 ShadCN components now installed (Button, Input, Label, Card, Avatar, Badge, Separator, Popover)
 
 
 ## Next Steps: Phase 1 Canvas Improvements
@@ -44,8 +67,10 @@
 - **Layers**: Part of objects feature, not separate feature
 - Total: 1,754 lines across 7 PRDs
 
-### Ready for Implementation
-- Feature 1 (Context Menu) is next to implement
+### Implementation Status
+- ✅ Feature 1 (Context Menu) - Complete
+- ✅ Feature 3 (Undo/Redo) - Complete
+- 🔄 Feature 2 (Duplicate Object) - Next priority
 - All PRDs follow vertical slice architecture
 - All integration points documented
 
@@ -83,5 +108,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - **AI Agent:** Deferred to post-Phase 2 (user preference)
 
 ---
-*Last Updated: 2025-10-19 - All Phase 1 PRDs complete with architectural simplifications*
+*Last Updated: 2025-10-19 - Feature 3 (Undo/Redo) complete with drag tracking fix*
 

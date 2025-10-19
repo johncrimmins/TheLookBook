@@ -9,11 +9,14 @@ import { Circle } from './Circle';
 interface ObjectRendererProps {
   objects: CanvasObject[];
   onObjectUpdate: (objectId: string, updates: Partial<CanvasObject>) => void;
+  onObjectDragStart?: (objectId: string) => void;
   onObjectDragMove?: (objectId: string, position: { x: number; y: number }) => void;
+  onObjectDragEnd?: (objectId: string, position: { x: number; y: number }) => void;
   onObjectTransformStart?: (objectId: string) => void;
   onObjectTransform?: (objectId: string, updates: Partial<CanvasObject>) => void;
   onObjectTransformEnd?: (objectId: string) => void;
   onObjectSelect?: (objectId: string | null) => void;
+  onObjectContextMenu?: (objectId: string, position: { x: number; y: number }) => void;
   currentUserId?: string;
   presenceUsers?: Record<string, { displayName: string }>;
   deselectTrigger?: number; // Increment this to trigger deselection
@@ -22,11 +25,14 @@ interface ObjectRendererProps {
 export function ObjectRenderer({ 
   objects, 
   onObjectUpdate, 
+  onObjectDragStart,
   onObjectDragMove,
+  onObjectDragEnd,
   onObjectTransformStart,
   onObjectTransform,
   onObjectTransformEnd,
   onObjectSelect,
+  onObjectContextMenu,
   currentUserId,
   presenceUsers = {},
   deselectTrigger,
@@ -50,6 +56,12 @@ export function ObjectRenderer({
     }
   };
   
+  const handleDragStart = (objectId: string) => {
+    if (onObjectDragStart) {
+      onObjectDragStart(objectId);
+    }
+  };
+  
   const handleDragMove = (objectId: string, position: { x: number; y: number }) => {
     if (onObjectDragMove) {
       onObjectDragMove(objectId, position);
@@ -57,7 +69,9 @@ export function ObjectRenderer({
   };
   
   const handleDragEnd = (objectId: string, position: { x: number; y: number }) => {
-    onObjectUpdate(objectId, { position });
+    if (onObjectDragEnd) {
+      onObjectDragEnd(objectId, position);
+    }
   };
 
   const handleTransformStart = (objectId: string) => {
@@ -78,6 +92,12 @@ export function ObjectRenderer({
       onObjectTransformEnd(objectId);
     }
   };
+
+  const handleContextMenu = (objectId: string, position: { x: number; y: number }) => {
+    if (onObjectContextMenu) {
+      onObjectContextMenu(objectId, position);
+    }
+  };
   
   return (
     <>
@@ -93,11 +113,13 @@ export function ObjectRenderer({
               object={object}
               isSelected={isSelected}
               onSelect={() => handleSelect(object.id)}
+              onDragStart={() => handleDragStart(object.id)}
               onDragMove={(pos) => handleDragMove(object.id, pos)}
               onDragEnd={(pos) => handleDragEnd(object.id, pos)}
               onTransformStart={() => handleTransformStart(object.id)}
               onTransform={(updates) => handleTransform(object.id, updates)}
               onTransformEnd={(updates) => handleTransformEnd(object.id, updates)}
+              onContextMenu={(pos: { x: number; y: number }) => handleContextMenu(object.id, pos)}
               isBeingTransformedByOther={isBeingTransformedByOther}
               transformingUserName={transformingUserName}
             />
@@ -111,11 +133,13 @@ export function ObjectRenderer({
               object={object}
               isSelected={isSelected}
               onSelect={() => handleSelect(object.id)}
+              onDragStart={() => handleDragStart(object.id)}
               onDragMove={(pos) => handleDragMove(object.id, pos)}
               onDragEnd={(pos) => handleDragEnd(object.id, pos)}
               onTransformStart={() => handleTransformStart(object.id)}
               onTransform={(updates) => handleTransform(object.id, updates)}
               onTransformEnd={(updates) => handleTransformEnd(object.id, updates)}
+              onContextMenu={(pos: { x: number; y: number }) => handleContextMenu(object.id, pos)}
               isBeingTransformedByOther={isBeingTransformedByOther}
               transformingUserName={transformingUserName}
             />

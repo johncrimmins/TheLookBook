@@ -13,6 +13,7 @@ interface UseShapeInteractionsProps {
   objectId: string;
   isSelected: boolean;
   onSelect?: () => void;
+  onDragStart?: (position: { x: number; y: number }) => void;
   onDragMove?: (position: { x: number; y: number }) => void;
   onDragEnd?: (position: { x: number; y: number }) => void;
   onTransformStart?: () => void;
@@ -28,6 +29,7 @@ interface UseShapeInteractionsProps {
     height: number;
     rotation: number;
   }) => void;
+  onContextMenu?: (position: { x: number; y: number }) => void;
   // Optional position transform for shapes like Circle that need offset adjustment
   positionTransform?: PositionTransform;
   // Visual feedback for when another user is transforming this object
@@ -58,11 +60,13 @@ interface UseShapeInteractionsProps {
 export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
   isSelected,
   onSelect,
+  onDragStart,
   onDragMove,
   onDragEnd,
   onTransformStart,
   onTransform,
   onTransformEnd,
+  onContextMenu,
   positionTransform,
   isBeingTransformedByOther = false,
   transformingUserName,
@@ -92,6 +96,19 @@ export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
       shapeRef.current.getLayer()?.batchDraw();
     }
   }, [isBeingTransformedByOther]);
+
+  // Handle drag start - captures initial position
+  const handleDragStart = useCallback(
+    (e: Konva.KonvaEventObject<DragEvent>) => {
+      if (onDragStart) {
+        const x = e.target.x();
+        const y = e.target.y();
+        const position = positionTransform?.toCanvas(x, y) ?? { x, y };
+        onDragStart(position);
+      }
+    },
+    [onDragStart, positionTransform]
+  );
 
   // Handle drag move - broadcasts position in real-time
   const handleDragMove = useCallback(
@@ -170,17 +187,40 @@ export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
     }
   }, [onTransformEnd, positionTransform]);
 
+  // Handle context menu (right-click)
+  const handleContextMenu = useCallback(
+    (e: Konva.KonvaEventObject<PointerEvent>) => {
+      e.evt.preventDefault(); // Prevent browser context menu
+      if (onContextMenu) {
+        const stage = e.target.getStage();
+        if (stage) {
+          const pointerPosition = stage.getPointerPosition();
+          if (pointerPosition) {
+            // Pass screen coordinates for menu positioning
+            onContextMenu({
+              x: pointerPosition.x,
+              y: pointerPosition.y,
+            });
+          }
+        }
+      }
+    },
+    [onContextMenu]
+  );
+
   return {
     shapeRef,
     trRef,
     handlers: {
       onClick: onSelect,
       onTap: onSelect,
+      onDragStart: handleDragStart,
       onDragMove: handleDragMove,
       onDragEnd: handleDragEnd,
       onTransformStart: handleTransformStart,
       onTransform: handleTransform,
       onTransformEnd: handleTransformEnd,
+      onContextMenu: handleContextMenu,
     },
     // Additional metadata for visual rendering
     visualState: {

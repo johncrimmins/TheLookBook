@@ -3,11 +3,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ProtectedRoute, UserProfile, useAuthStore } from '@/features/auth';
-import { Canvas, CanvasToolbar } from '@/features/canvas';
+import { Canvas, CanvasToolbar, useCanvasStore } from '@/features/canvas';
 import { OnlineUsers, usePresenceStore } from '@/features/presence';
-import { ObjectRenderer, useObjects, broadcastShapePreview, subscribeToShapePreviews } from '@/features/objects';
+import { ObjectRenderer, useObjects, broadcastShapePreview, subscribeToShapePreviews, ContextMenu, PropertiesPanel } from '@/features/objects';
 import { ShapePreview as ShapePreviewComponent } from '@/features/objects/components/ShapePreview';
 import type { ShapePreview as ShapePreviewType } from '@/features/objects/types';
+import { useHistory } from '@/features/history';
 import { Point } from '@/shared/types';
 import { throttle } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -19,6 +20,7 @@ export const dynamic = 'force-dynamic';
 export default function CanvasPage() {
   const user = useAuthStore((state) => state.user);
   const presence = usePresenceStore((state) => state.presence);
+  const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const [canvasId, setCanvasId] = useState<string | null>(null);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
   const [tool, setTool] = useState<'select' | 'rectangle' | 'circle'>('select');
@@ -32,11 +34,21 @@ export default function CanvasPage() {
     createObject, 
     updateObject, 
     deleteObject,
+    addObject,
     broadcastObjectMove,
     broadcastObjectTransformStart,
     broadcastObjectTransform,
     broadcastObjectTransformEnd,
+    startObjectDrag,
+    finishObjectDrag,
   } = useObjects(canvasId);
+  
+  // Setup undo/redo with keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+  const { canUndo, canRedo, undo, redo } = useHistory({
+    addObject,
+    updateObject,
+    deleteObject,
+  });
   
   // Initialize canvas ID (in production, this would come from route params or creation flow)
   useEffect(() => {
@@ -164,6 +176,14 @@ export default function CanvasPage() {
   const handleObjectSelect = useCallback((objectId: string | null) => {
     setSelectedObjectId(objectId);
   }, []);
+
+  const handleObjectContextMenu = useCallback((objectId: string, position: { x: number; y: number }) => {
+    // Set context menu state to show menu
+    setContextMenu({
+      objectId,
+      position,
+    });
+  }, [setContextMenu]);
   
   const handleDeleteSelected = useCallback(async () => {
     if (selectedObjectId && canvasId) {
@@ -279,6 +299,55 @@ export default function CanvasPage() {
                     <circle cx="12" cy="12" r="10" />
                   </svg>
                 </Button>
+                
+                <div className="h-6 w-px bg-gray-300 mx-1" />
+                
+                {/* Undo/Redo buttons */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={undo}
+                  disabled={!canUndo}
+                  title="Undo (Ctrl+Z)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 7v6h6" />
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+                  </svg>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={redo}
+                  disabled={!canRedo}
+                  title="Redo (Ctrl+Y)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 7v6h-6" />
+                    <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7" />
+                  </svg>
+                </Button>
               </div>
             </div>
             
@@ -315,8 +384,14 @@ export default function CanvasPage() {
               onObjectUpdate={(objectId, updates) => {
                 updateObject(objectId, updates);
               }}
+              onObjectDragStart={(objectId) => {
+                startObjectDrag(objectId);
+              }}
               onObjectDragMove={(objectId, position) => {
                 broadcastObjectMove(objectId, position);
+              }}
+              onObjectDragEnd={(objectId, position) => {
+                finishObjectDrag(objectId, position);
               }}
               onObjectTransformStart={(objectId) => {
                 broadcastObjectTransformStart(objectId);
@@ -328,6 +403,7 @@ export default function CanvasPage() {
                 broadcastObjectTransformEnd(objectId);
               }}
               onObjectSelect={handleObjectSelect}
+              onObjectContextMenu={handleObjectContextMenu}
               currentUserId={user?.id}
               presenceUsers={presence}
               deselectTrigger={deselectTrigger}
@@ -352,6 +428,12 @@ export default function CanvasPage() {
               <OnlineUsers presence={presence} currentUserId={user?.id} />
             </div>
           )}
+          
+          {/* Context Menu */}
+          {canvasId && <ContextMenu canvasId={canvasId} />}
+          
+          {/* Properties Panel */}
+          {canvasId && <PropertiesPanel canvasId={canvasId} />}
         </div>
       </div>
     </ProtectedRoute>
