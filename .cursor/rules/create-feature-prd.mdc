@@ -59,6 +59,7 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 
 ## Final instructions
 
-1. Do NOT start implementing the PRD
-2. Make sure to ask the user clarifying questions
-3. Take the user's answers to the clarifying questions and improve the PRD
+1. Ensure the final PRD is less than 250 lines of code. If it needs to be modularized and broken into 2 feature PRD's, then do so.
+2. Do NOT start implementing the PRD
+3. Make sure to ask the user clarifying questions
+4. Take the user's answers to the clarifying questions and improve the PRD
