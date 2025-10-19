@@ -33,6 +33,7 @@ export function copyToClipboard(object: CanvasObject, canvasId?: string): boolea
         rotation: object.rotation,
         fill: object.fill,
         opacity: object.opacity,
+        order: object.order,
       },
     };
 

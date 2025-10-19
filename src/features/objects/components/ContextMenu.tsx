@@ -18,7 +18,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   const contextMenu = useCanvasStore((state) => state.contextMenu);
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const setPropertiesPanel = useCanvasStore((state) => state.setPropertiesPanel);
-  const { objectsMap, deleteObject } = useObjects(canvasId);
+  const { objectsMap, deleteObject, bringToFront, sendToBack } = useObjects(canvasId);
 
   // Close menu on ESC key
   const handleKeyDown = useCallback(
@@ -77,6 +77,16 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
     if (onCopy) {
       onCopy(contextMenu.objectId);
     }
+    setContextMenu(null);
+  };
+
+  const handleBringToFront = () => {
+    bringToFront(contextMenu.objectId);
+    setContextMenu(null);
+  };
+
+  const handleSendToBack = () => {
+    sendToBack(contextMenu.objectId);
     setContextMenu(null);
   };
 
@@ -193,11 +203,11 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
 
           <Separator />
 
-          {/* Bring to Front - placeholder */}
+          {/* Bring to Front */}
           <Button
             variant="ghost"
             className="w-full justify-start h-8 px-2 text-sm font-normal"
-            disabled
+            onClick={handleBringToFront}
           >
             <svg
               className="mr-2 h-4 w-4"
@@ -213,13 +223,14 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               <polyline points="17 18 12 13 7 18" />
             </svg>
             Bring to Front
+            <span className="ml-auto text-xs text-gray-400">Ctrl+Shift+]</span>
           </Button>
 
-          {/* Send to Back - placeholder */}
+          {/* Send to Back */}
           <Button
             variant="ghost"
             className="w-full justify-start h-8 px-2 text-sm font-normal"
-            disabled
+            onClick={handleSendToBack}
           >
             <svg
               className="mr-2 h-4 w-4"
@@ -235,6 +246,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               <polyline points="7 6 12 11 17 6" />
             </svg>
             Send to Back
+            <span className="ml-auto text-xs text-gray-400">Ctrl+Shift+[</span>
           </Button>
         </div>
       </Card>

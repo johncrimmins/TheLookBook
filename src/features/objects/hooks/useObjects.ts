@@ -84,6 +84,7 @@ export function useObjects(canvasId: string | null) {
         rotation: 0,
         fill: params.fill || '#3B82F6',
         opacity: 1.0,
+        order: Date.now(), // Use timestamp for unique ordering
         createdBy: user.id,
       };
       
@@ -355,6 +356,36 @@ export function useObjects(canvasId: string | null) {
     [canvasId, user, recordAction, updateObjectPosition]
   );
 
+  // Order operations (Konva best practice: control render order via array position)
+  const bringToFront = useCallback(
+    (objectId: string) => {
+      const allObjects = Object.values(objects);
+      if (allObjects.length === 0) return;
+      
+      // Find the maximum order value
+      const maxOrder = Math.max(...allObjects.map(obj => obj.order));
+      
+      // Set this object's order to max + 1 (renders last = front)
+      updateObject(objectId, { order: maxOrder + 1 });
+    },
+    [objects, updateObject]
+  );
+
+  const sendToBack = useCallback(
+    (objectId: string) => {
+      const allObjects = Object.values(objects);
+      if (allObjects.length === 0) return;
+      
+      // Find the minimum order value
+      const minOrder = Math.min(...allObjects.map(obj => obj.order));
+      
+      // Set this object's order to min - 1 (renders first = back)
+      updateObject(objectId, { order: minOrder - 1 });
+    },
+    [objects, updateObject]
+  );
+
+
   return {
     objects: Object.values(objects),
     objectsMap: objects,
@@ -369,6 +400,8 @@ export function useObjects(canvasId: string | null) {
     addObject,
     startObjectDrag,
     finishObjectDrag,
+    bringToFront,
+    sendToBack,
   };
 }
 

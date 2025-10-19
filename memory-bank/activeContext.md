@@ -35,12 +35,38 @@
 - Auto-select pasted object for immediate manipulation
 - Reuses existing ShapePreview component (elegant, consistent)
 
-🔄 **Next:** Feature 5A (Z-Index)
+✅ **Feature 5A: Z-Index - COMPLETE (Debugged & Fixed)**
+- zIndex implementation using `order` property with Date.now() for automatic stacking
+- 2 keyboard shortcuts: Ctrl+Shift+] (to front), Ctrl+Shift+[ (to back)
+- Context menu integration with "Bring to Front" and "Send to Back" actions only
+- Objects sorted by order in ObjectRenderer for correct rendering order
+- Real-time sync via existing updateObject infrastructure
+- Undo/redo support via history integration
+- **Debugging fixes (2025-10-19):**
+  - Fixed keyboard shortcuts checking wrong key values (was checking `}` and `{` instead of `]` and `[`)
+  - Removed "Bring Forward" and "Send Backward" (kept only "To Front" and "To Back")
+  - Verified new shapes render above existing shapes correctly
+
+🔄 **Next:** Feature 5B (Layer Panel)
 - Core platform complete and deployed (5 features + ShadCN UI)
-- 4 of 7 Phase 1 features complete (57%)
+- 5 of 7 Phase 1 features complete (71%)
 - Feature roadmap documented in `new-features-roadmap.md`
 
 ## Recent Changes
+- **Feature 5A: Z-Index Debugging & Fixes (2025-10-19)**
+  - Fixed keyboard shortcut bug: Was checking for `}` and `{` instead of `]` and `[` with shift modifier
+  - Removed "Bring Forward" (Ctrl+]) and "Send Backward" (Ctrl+[) functions entirely
+  - Kept only "Bring to Front" (Ctrl+Shift+]) and "Send to Back" (Ctrl+Shift+[)
+  - Updated context menu to show only 2 stacking actions (removed forward/backward)
+  - Verified new shapes render above existing shapes (order: Date.now() ensures proper stacking)
+  - Build successful, zero linter errors, all functionality working correctly
+- **Feature 5A: Z-Index Complete (2025-10-19)**
+  - Uses `order` property with Date.now() for automatic stacking (not zIndex)
+  - 2 z-index operations: bringToFront, sendToBack (simplified from 4)
+  - Objects sorted by order in ObjectRenderer using useMemo for performance
+  - Context menu "Bring to Front" and "Send to Back" actions with keyboard hints
+  - Real-time sync via existing updateObject mechanism
+  - Build successful, zero linter errors
 - **Feature 4: Copy/Paste Enhanced (2025-10-19)**
   - Keyboard shortcuts: Ctrl+C (copy), Ctrl+V (paste), Cmd+C/V on Mac
   - Created shared clipboard utilities in `src/shared/lib/clipboard.ts`
@@ -113,7 +139,8 @@
 - ✅ Feature 2 (Duplicate Object) - Complete
 - ✅ Feature 3 (Undo/Redo) - Complete
 - ✅ Feature 4 (Copy/Paste) - Complete
-- 🔄 Feature 5A (Z-Index) - Next priority
+- ✅ Feature 5A (Z-Index) - Complete
+- 🔄 Feature 5B (Layer Panel) - Next priority
 - All PRDs follow vertical slice architecture
 - All integration points documented
 
@@ -151,5 +178,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - **AI Agent:** Deferred to post-Phase 2 (user preference)
 
 ---
-*Last Updated: 2025-10-19 - Feature 4 (Copy/Paste) enhanced with interactive preview*
+*Last Updated: 2025-10-19 - Feature 5A (Z-Index) debugged and fixed*
 

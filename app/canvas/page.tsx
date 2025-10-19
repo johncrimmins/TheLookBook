@@ -44,6 +44,8 @@ export default function CanvasPage() {
     broadcastObjectTransformEnd,
     startObjectDrag,
     finishObjectDrag,
+    bringToFront,
+    sendToBack,
   } = useObjects(canvasId);
   
   // Setup undo/redo with keyboard shortcuts (Ctrl+Z, Ctrl+Y)
@@ -336,7 +338,7 @@ export default function CanvasPage() {
     console.log('Entered paste mode - click to place object');
   }, [canvasId, user]);
   
-  // Keyboard shortcuts for delete, duplicate, copy, and paste
+  // Keyboard shortcuts for delete, duplicate, copy, paste, and z-index
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // ESC key - cancel paste mode
@@ -347,9 +349,8 @@ export default function CanvasPage() {
         return;
       }
       
-      // Delete or Backspace key
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObjectId) {
-        // Prevent backspace from navigating back in browser
+      // Delete key only (not Backspace)
+      if (e.key === 'Delete' && selectedObjectId) {
         e.preventDefault();
         handleDeleteSelected();
       }
@@ -371,11 +372,29 @@ export default function CanvasPage() {
         e.preventDefault(); // Prevent default browser paste
         handlePasteObject();
       }
+      
+      // Z-Index shortcuts (only when object is selected)
+      if (selectedObjectId) {
+        const ctrl = e.ctrlKey || e.metaKey;
+        const shift = e.shiftKey;
+        
+        // Bring to Front: Ctrl+Shift+]
+        if (ctrl && shift && e.key === ']') {
+          e.preventDefault();
+          bringToFront(selectedObjectId);
+        }
+        
+        // Send to Back: Ctrl+Shift+[
+        if (ctrl && shift && e.key === '[') {
+          e.preventDefault();
+          sendToBack(selectedObjectId);
+        }
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedObjectId, isPasteMode, handleDeleteSelected, handleDuplicateObject, handleCopyObject, handlePasteObject]);
+  }, [selectedObjectId, isPasteMode, handleDeleteSelected, handleDuplicateObject, handleCopyObject, handlePasteObject, bringToFront, sendToBack]);
   
   if (!canvasId) {
     return (

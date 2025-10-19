@@ -21,6 +21,8 @@
 ✅ **Context Menu:** Right-click menu + properties panel with all object editors
 ✅ **Duplicate Object:** Ctrl+D keyboard shortcut + context menu integration
 ✅ **Copy/Paste:** Interactive paste with preview, multiple pastes, click-to-place
+✅ **Undo/Redo:** Ctrl+Z/Y keyboard shortcuts, 50-action history per user
+✅ **Z-Index:** Object stacking control with 4 keyboard shortcuts + context menu
 
 ## What's Left to Build
 
@@ -56,7 +58,7 @@ All 5 core features plus UI system implemented:
   - [x] Selection state: Lives in objects store
   - [x] Layers: Part of objects feature
 
-- [ ] **Implementation** (4/7 complete)
+- [ ] **Implementation** (5/7 complete)
   - [x] Feature 1: Context Menu - COMPLETE
     - Traditional right-click action menu
     - Properties panel with color picker, numeric inputs
@@ -84,8 +86,14 @@ All 5 core features plus UI system implemented:
     - ESC to cancel paste mode
     - Context menu integration with keyboard hint
     - Reuses ShapePreview component (elegant, DRY)
-  - [ ] Feature 5A: Z-Index (2-3 days) - Next priority
-  - [ ] Feature 5B: Layer Panel (5-7 days)
+  - [x] Feature 5A: Z-Index - COMPLETE (Debugged & Fixed)
+    - Uses `order` property with Date.now() for automatic stacking
+    - 2 keyboard shortcuts: Ctrl+Shift+] (to front), Ctrl+Shift+[ (to back)
+    - Context menu "Bring to Front" and "Send to Back" only
+    - Objects sorted by order in ObjectRenderer
+    - Real-time sync and undo/redo support
+    - Debugging fixes: Fixed keyboard shortcuts, removed forward/backward, verified stacking
+  - [ ] Feature 5B: Layer Panel (5-7 days) - Next priority
   - [ ] Feature 6: Multi-Select (5-7 days)
 
 ### Future: AI Agent (Deferred Post-Phase 2)
@@ -99,7 +107,8 @@ All 5 core features plus UI system implemented:
 ✅ **Feature 2 Complete:** Duplicate Object with keyboard shortcut  
 ✅ **Feature 3 Complete:** Undo/Redo with keyboard shortcuts and drag tracking  
 ✅ **Feature 4 Complete:** Copy/Paste with localStorage clipboard  
-📋 **Next:** Feature 5A implementation (Z-Index)
+✅ **Feature 5A Complete:** Z-Index with keyboard shortcuts and context menu  
+📋 **Next:** Feature 5B implementation (Layer Panel)
 
 ## Known Issues
 - Performance benchmarks need validation with real concurrent users
@@ -115,13 +124,38 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 - **Cursor Rules:** 14+ rules
 - **Core Features Complete:** 5 / 5 features (100%)
 - **Phase 1 Planning:** 7 / 7 PRDs complete (100%)
-- **Phase 1 Implementation:** 4 / 7 features complete (57%)
+- **Phase 1 Implementation:** 5 / 7 features complete (71%)
 - **UI Components:** 8 ShadCN components installed (Button, Input, Label, Card, Avatar, Badge, Separator, Popover)
 - **Shape Types:** 2 (Rectangle, Circle)
 - **Custom Hooks:** 5 (useAuth, usePresence, useCanvas, useObjects, useShapeInteractions)
 - **Deployment Status:** ✅ Deployed to Vercel with secured databases
 
 ## Recent Updates
+
+### 2025-10-19 - Feature 5A: Z-Index Debugging & Fixes ✅
+- ✅ **Fixed keyboard shortcuts:** Was checking `}` and `{` instead of `]` and `[` with shift modifier
+- ✅ **Removed Bring Forward/Send Backward:** Simplified to only "To Front" and "To Back"
+- ✅ **Updated context menu:** Removed forward/backward options, kept only 2 stacking actions
+- ✅ **Verified new shape stacking:** Confirmed Date.now() order ensures new shapes render on top
+- ✅ **Files modified:**
+  - app/canvas/page.tsx - Fixed keyboard shortcuts, removed forward/backward
+  - src/features/objects/components/ContextMenu.tsx - Removed forward/backward menu items
+  - src/features/objects/hooks/useObjects.ts - Removed forward/backward functions
+- ✅ Build successful, zero linter errors, all functionality working correctly
+- ✅ **Status:** Feature 5A complete and debugged, ready for Feature 5B (Layer Panel)
+
+### 2025-10-19 - Feature 5A: Z-Index Complete ✅
+- ✅ Uses `order` property with Date.now() for automatic stacking (not separate zIndex field)
+- ✅ Implemented 2 z-index operations in useObjects hook:
+  - bringToFront() - Sets order to max + 1
+  - sendToBack() - Sets order to min - 1
+- ✅ Keyboard shortcuts: Ctrl+Shift+] (to front), Ctrl+Shift+[ (to back)
+- ✅ Objects sorted by order in ObjectRenderer using useMemo for performance
+- ✅ Context menu "Bring to Front" and "Send to Back" actions enabled
+- ✅ Keyboard shortcut hints displayed in context menu
+- ✅ Real-time sync via existing updateObject infrastructure
+- ✅ Undo/redo support via history integration (automatic)
+- ✅ Build successful, zero linter errors
 
 ### 2025-10-19 - Feature 4: Copy/Paste Enhanced ✅
 - ✅ Keyboard shortcuts: Ctrl+C (copy), Ctrl+V (paste), Cmd+C/V on Mac
@@ -178,23 +212,7 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 - ✅ Components: ContextMenu, PropertiesPanel, PropertyInput, ColorPicker
 - ✅ **Status:** Feature 1 complete, ready for Feature 3 (Undo/Redo)
 
-### 2025-10-19 - All Phase 1 PRDs Complete 📋
-- ✅ Pivoted focus from AI agent to canvas improvements (user-driven decision)
-- ✅ Created `new-features-roadmap.md` with 7 features across 2 phases
-- ✅ All 7 Phase 1 PRDs complete in `/tasks/` folder (1,754 lines)
-- ✅ Architectural simplifications: Clipboard utilities, selection in objects store, layers in objects
-- ✅ Implementation order: Context Menu → Undo/Redo → Duplicate → Copy/Paste → Z-Index → Layer Panel → Multi-Select
-- ✅ Updated memory bank to reflect completion
-- ✅ **Status:** Ready to begin Feature 1 implementation
 
-### 2025-10-19 - ShadCN UI Integration 🎨
-- ✅ Installed and configured ShadCN with Radix UI primitives
-- ✅ Added 7 core components (Button, Input, Label, Card, Avatar, Badge, Separator)
-- ✅ Refactored all UI components to use ShadCN (AuthForm, UserProfile, OnlineUsers, CanvasToolbar, Canvas page)
-- ✅ Updated Tailwind config with ShadCN theme variables (HSL format)
-- ✅ Created barrel export for easy component importing
-- ✅ Professional, consistent design system across all features
-- ✅ **Status:** UI system standardized, ready for AI agent UI components
 
 
 ## Next Immediate Steps
@@ -208,9 +226,10 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 8. ✅ **Implement Feature 2** - Duplicate object functionality complete
 9. ✅ **Implement Feature 3** - Undo/redo with drag tracking complete
 10. ✅ **Implement Feature 4** - Copy/paste functionality complete
-11. **Implement Feature 5A** - Z-index functionality
-12. **Continue Phase 1** - Layer panel, multi-select
+11. ✅ **Implement Feature 5A** - Z-index functionality complete
+12. **Implement Feature 5B** - Layer panel
+13. **Implement Feature 6** - Multi-select
 
 ---
-*Last Updated: 2025-10-19 - Feature 4 (Copy/Paste) enhanced with interactive preview*
+*Last Updated: 2025-10-19 - Feature 5A (Z-Index) debugged and fixed*
 

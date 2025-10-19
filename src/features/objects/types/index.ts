@@ -13,6 +13,7 @@ export interface CanvasObject {
   rotation: number;
   fill: string;
   opacity: number; // 0-1 range (default 1.0)
+  order: number; // Render order - lower renders first (back), higher renders last (front)
   createdBy: string;
   createdAt: number;
   updatedAt: number;

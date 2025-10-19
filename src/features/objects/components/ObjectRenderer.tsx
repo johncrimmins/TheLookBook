@@ -1,7 +1,7 @@
 // Object renderer - renders all canvas objects
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { CanvasObject } from '../types';
 import { Rectangle } from './Rectangle';
 import { Circle } from './Circle';
@@ -99,9 +99,15 @@ export function ObjectRenderer({
     }
   };
   
+  // Sort objects by order for correct rendering (Konva best practice)
+  // Lower order renders first (back), higher order renders last (front)
+  const sortedObjects = useMemo(() => {
+    return [...objects].sort((a, b) => a.order - b.order);
+  }, [objects]);
+  
   return (
     <>
-      {objects.map((object) => {
+      {sortedObjects.map((object) => {
         const isSelected = object.id === selectedId;
         const isBeingTransformedByOther = !!(object.transformingBy && object.transformingBy !== currentUserId);
         const transformingUserName = object.transformingBy && presenceUsers[object.transformingBy]?.displayName;
