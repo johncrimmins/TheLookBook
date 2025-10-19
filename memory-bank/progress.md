@@ -12,6 +12,10 @@
 ✅ **UI System:** ShadCN component library integrated (Tooltip, ScrollArea added)
 ✅ **Security:** Firestore and RTDB rules secured with authentication
 ✅ **Modern UI:** Left toolbar (60px) + right pinnable sidebar (320px) with state persistence
+✅ **Testing:** Chrome DevTools MCP integrated for automated performance/bug testing
+   - Agent guide: `docs/testing/agent-testing-guide.md` (for dedicated testing sessions)
+   - Test modules: `docs/testing/performance.md`, `collaboration.md`, `network-reliability.md`, `monitoring.md`
+   - Bug log: `docs/testing/bugs-found.md`
 
 ## What's Left to Build
 
@@ -37,13 +41,17 @@ All 5 core features deployed: Auth, Presence, Canvas, Objects, History + ShadCN 
 
 
 ## In Progress
-✅ **Feature 8 Complete:** My Lookbooks fully implemented and working
-✅ **Feature 9 Complete:** Shared Lookbooks with real-time collaboration
-📋 **Next:** Bug fixes, testing, or Phase 2 (AI Agent)
+📋 **AI Agent PRD 1:** Basic Foundation (Ready for Implementation)
+  - Status: PRDs created and reviewed
+  - Next: Install dependencies, build API route, create chat UI
+  - Files: `tasks/prd-ai-agent-basic.md` (260 lines)
+  - Goal: Simple shape creation with LangChain + OpenAI
 
 ## Known Issues
-- Feature 7 has minor bugs that need testing/fixing
+- **Bug #1 (CRITICAL):** Canvas crash - presence.map is not a function (CanvasToolbar.tsx:106)
+- **Bug #2 (HIGH):** generateLayerName import error (LayerItem.tsx, useObjects.ts)
 - Performance benchmarks need validation with real concurrent users
+- See `docs/testing/bugs-found.md` for automated test findings
 
 ## Blockers
 None - Core platform stable, Phase 1 implementation in progress
@@ -54,15 +62,52 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 ## Metrics
 - **Core Platform:** 5/5 features (100%), deployed to Vercel
 - **Phase 1 Progress:** ALL COMPLETE ✅ (Features 1-7 including toolbar & layers)
+- **Phase 2 Progress:** PRD 1 & PRD 2 created ✅, implementation starting
 - **Phase 3 Progress:** Features 8 & 9 COMPLETE ✅ (My Lookbooks + Shared Lookbooks)
-- **PRDs:** 4 created (Features 6, 7, 8, 9 - all complete)
-- **Zustand Stores:** 4 (objectsStore, selectionStore, uiPreferencesStore, lookbooksStore)
+- **PRDs:** 6 created (Features 6, 7, 8, 9 complete; AI Agent PRD 1 & 2 ready)
+- **Zustand Stores:** 4 (objectsStore, selectionStore, uiPreferencesStore, lookbooksStore; aiChatStore pending)
 - **UI Components:** 13 ShadCN components (Dialog added for Feature 9)
-- **Custom Hooks:** 11 (added useCollaborators, useIsOwner, useUserSearch for Feature 9)
+- **Custom Hooks:** 11 (will add useAIChat in PRD 1)
 - **Layer Components:** 5 (Layer, LayerList, LayerModal, CreateLayerButton, LayerThumbnail)
 - **Lookbook Components:** 12 (6 from Feature 8 + 6 collaboration components from Feature 9)
 
 ## Recent Updates
+
+### 2025-10-19 - AI Agent PRDs Created ✅
+**Status:** PRDs reviewed and ready for implementation
+
+**PRD 1: Basic Foundation** (~260 lines)
+- **Goal:** Validate AI architecture with simple shape creation
+- **Commands:** Create rectangle, circle, text
+- **Architecture:**
+  - Unified `manipulateCanvas` tool (only "create" operation in PRD 1)
+  - Simple object memory Map (in-memory, stores labels)
+  - Session-based persistence (sessionStorage only)
+  - 12 files to create (combined from 17)
+- **Key Decisions:**
+  - No validation/testing sections (manual testing)
+  - No complex persistence logic (sessionStorage, no TTL)
+  - Combined files: AIChatPanel (all UI), aiService (canvas + API), useAIChat (state + persistence)
+- **Dependencies:** LangChain, @langchain/openai, openai
+- **Foundation for PRD 2:** Object memory Map, extensible tool schema, AI service layer
+
+**PRD 2: Complex Commands** (~285 lines)
+- **Extends PRD 1:** Adds operations to `manipulateCanvas` (move, resize, delete, batch, layout)
+- **Semantic References:** Query object memory by label/description
+- **Multi-Step:** "Create login form" → 6 objects with proper positioning
+- **Batch Operations:** "Create 3x3 grid" → 9 circles in grid layout
+- **Smart Layouts:** Align, distribute, arrange algorithms
+- **Zero Refactoring:** PRD 1 code unchanged, pure extension
+
+**Dependency Resolution:**
+- ✅ Tool name consistent (manipulateCanvas in both)
+- ✅ Object memory structure extensible
+- ✅ Clean iterative build strategy
+- ✅ No breaking changes between PRDs
+
+**Files Created:**
+- `tasks/prd-ai-agent-basic.md`
+- `tasks/prd-ai-agent-complex.md`
 
 ### 2025-10-19 - Feature 9: Shared Lookbooks Complete ✅
 **Status:** COMPLETE - Production-ready collaboration with Google Docs-style UX
@@ -256,13 +301,16 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 
 
 ## Next Immediate Steps
-1. **Bug Fixes** - Test and fix minor issues in Feature 7 (Hierarchical Layers)
-2. **Performance Testing** - Validate with concurrent users
-3. **Choose Next Phase:**
-   - **Option A:** Phase 2 (AI Agent) - LangChain + OpenAI integration
-   - **Option B:** Additional canvas features or improvements
-   - **Option C:** Advanced Lookbooks features (templates, search, etc.)
+1. **Implement AI Agent PRD 1** - Basic Foundation (3-4 days)
+   - Install dependencies: `npm install langchain @langchain/openai @langchain/core openai`
+   - Create API route with Firebase auth (`app/api/ai/chat/route.ts`)
+   - Build chat UI (`AIChatPanel.tsx`)
+   - Implement `manipulateCanvas` tool with "create" operation
+   - Test with LangSmith tracing
+   - Validate simple commands work end-to-end
+2. **After PRD 1 Complete** - Implement AI Agent PRD 2 (Complex Commands)
+3. **Future** - Bug fixes, advanced Lookbooks features, performance testing
 
 ---
-*Last Updated: 2025-10-19 - Features 8 & 9 (Lookbooks + Collaboration) complete*
+*Last Updated: 2025-10-19 - AI Agent PRDs created, PRD 1 ready for implementation*
 

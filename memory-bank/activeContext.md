@@ -1,22 +1,49 @@
 # Active Context: CollabCanvas v3
 
 ## Current Focus
-**Phase:** Phase 3 (Lookbooks) - Features 8 & 9 Complete ✅
+**Phase:** Phase 2 (AI Agent) - PRD 1 Implementation Starting
 **Date:** 2025-10-19
 
 ### Immediate Tasks
 
-✅ **Complete:** Feature 5B-1 (Toolbar Architecture Refactor)
-✅ **Complete:** Feature 6 (Multi-Select) - Full implementation with 3-store refactor
-✅ **Complete:** Feature 7 (Hierarchical Layers System) - Replaces Feature 5B-2
-✅ **Complete:** Feature 8 (My Lookbooks) - Multi-canvas project repository with Google Auth
-✅ **Complete:** Feature 9 (Shared Lookbooks) - Collaboration, ownership, Google Docs-style presence
-📋 **Next:** Additional features, bug fixes, or Phase 2 (AI Agent)
+✅ **Complete:** All Phase 1 & Phase 3 features (Lookbooks + Canvas improvements)
+✅ **Complete:** AI Agent PRDs created (PRD 1: Basic Foundation, PRD 2: Complex Commands)
+📋 **Next:** Implement PRD 1 - AI Agent Basic Foundation
+  - Install LangChain + OpenAI dependencies
+  - Build API route with Firebase auth
+  - Create chat UI (AIChatPanel component)
+  - Implement manipulateCanvas tool (create operation only)
+  - Test simple commands: create rectangle, circle, text
+  - Verify LangSmith tracing
 
 ### Important Note
 Feature 7 (Hierarchical Layers System) has replaced Feature 5B-2's incorrect flat structure. Layers now properly group multiple objects (Photoshop-style), with visibility/lock inheritance and full Firestore sync.
 
 ## Recent Changes
+- **AI Agent PRDs Created (2025-10-19)**
+  - ✅ PRD 1: Basic Foundation (~260 lines)
+    - Unified `manipulateCanvas` tool from day 1 (only "create" operation)
+    - Simple object memory Map for label tracking
+    - Session-based chat persistence (sessionStorage)
+    - 12 files to create (simplified from 17)
+    - No validation/testing (manual testing only)
+    - Foundation for PRD 2 semantic references
+  - ✅ PRD 2: Complex Commands (~285 lines)
+    - Extends `manipulateCanvas` with 7 operations total
+    - Adds semantic reference resolution
+    - Multi-step command planning
+    - Batch operations and smart layouts
+    - Zero refactoring of PRD 1 required
+  - **Architecture:**
+    - Client: `src/features/ai-agent/` (7 files)
+    - Server: `app/api/ai/` (4 files)
+    - Combined files: AIChatPanel (UI), aiService (operations), useAIChat (state)
+    - Object memory: In-memory Map at API route level
+  - **Dependencies Resolved:**
+    - Tool name consistent between PRDs
+    - Object tracking structure extensible
+    - Clean iterative build strategy
+  - **Files:** `tasks/prd-ai-agent-basic.md`, `tasks/prd-ai-agent-complex.md`
 - **Feature 9: Shared Lookbooks Complete (2025-10-19)**
   - ✅ Real-time collaboration with owner/designer roles
   - ✅ Google Docs-style presence UI (overlapping avatars, online indicators)
@@ -133,14 +160,19 @@ None - Core platform stable, ready for Phase 1 feature implementation
 
 ## Notes
 - Core platform deployed: 5 features + ShadCN UI
-- PRD strategy: Modular ~220-260 line docs (context-efficient)
+- PRD strategy: Modular ~220-285 line docs (simplified, no testing/validation sections)
 - UI architecture: Left toolbar (60px) + right sidebar (320px, pinnable)
-- **Phase 2:** AI Agent (planned after Lookbooks or canvas features)
-- **Phase 3:** Lookbooks (Feature 8 & 9 PRDs ready - IMPLEMENTING NOW)
+- **Phase 1:** Complete (Canvas improvements, toolbar, layers, multi-select)
+- **Phase 2:** AI Agent - PRD 1 ready for implementation ⏳
+- **Phase 3:** Complete (My Lookbooks + Shared Lookbooks)
 
 ## Upcoming Features
-All Phase 3 (Lookbooks) features complete ✅
+**Next: AI Agent PRD 1** (3-4 days estimated)
+- Basic foundation with simple shape creation
+- LangChain + OpenAI + LangSmith integration
+- Unified `manipulateCanvas` tool architecture
+- Foundation for PRD 2 complex commands
 
 ---
-*Last Updated: 2025-10-19 - Features 8 & 9 (Lookbooks + Collaboration) complete*
+*Last Updated: 2025-10-19 - AI Agent PRDs created, PRD 1 ready for implementation*
 
