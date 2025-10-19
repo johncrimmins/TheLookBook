@@ -6,6 +6,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { useAuthStore } from '../lib/authStore';
 import { User } from '../types';
+import { syncUserProfile } from '../services/authService';
 
 /**
  * Hook to manage authentication state
@@ -20,7 +21,7 @@ export function useAuth() {
       return;
     }
     
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         const user: User = {
           id: firebaseUser.uid,
@@ -29,6 +30,14 @@ export function useAuth() {
           photoURL: firebaseUser.photoURL,
         };
         setUser(user);
+        
+        // Feature 9: Sync user profile to Firestore for user search
+        await syncUserProfile(
+          firebaseUser.uid,
+          firebaseUser.email || '',
+          firebaseUser.displayName,
+          firebaseUser.photoURL
+        );
       } else {
         setUser(null);
       }

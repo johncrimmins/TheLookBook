@@ -2,21 +2,18 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import dynamicImport from 'next/dynamic';
-import Link from 'next/link';
-import { ProtectedRoute, UserProfile, useAuthStore } from '@/features/auth';
+import { ProtectedRoute, useAuthStore } from '@/features/auth';
 import { useCanvasStore, useLeftToolbar } from '@/features/canvas';
-import { OnlineUsers, usePresenceStore } from '@/features/presence';
+import { usePresenceStore } from '@/features/presence';
 import { useObjects, useSelectionStore, broadcastShapePreview, subscribeToShapePreviews } from '@/features/objects';
-import { getLookbook, subscribeToLookbook, useLookbooksStore } from '@/features/lookbooks';
+import { subscribeToLookbook, useLookbooksStore } from '@/features/lookbooks';
 import type { ShapePreview as ShapePreviewType } from '@/features/objects/types';
 import { useHistory } from '@/features/history';
 import { Point } from '@/shared/types';
 import { throttle } from '@/shared/lib/utils';
 import { copyToClipboard, pasteFromClipboard } from '@/shared/lib/clipboard';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 
 // Dynamically import Canvas and Konva-dependent components to avoid SSR issues
 const Canvas = dynamicImport(() => import('@/features/canvas').then(mod => ({ default: mod.Canvas })), { ssr: false });
@@ -32,12 +29,13 @@ export const dynamic = 'force-dynamic';
 
 export default function CanvasPage() {
   const params = useParams();
+  const router = useRouter();
   const canvasId = params?.canvasId as string;
   
   const user = useAuthStore((state) => state.user);
   const presence = usePresenceStore((state) => state.presence);
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
-  const { currentLookbook, setCurrentLookbook } = useLookbooksStore();
+  const { setCurrentLookbook } = useLookbooksStore();
   
   // Use left toolbar hook for tool selection with keyboard shortcuts
   const { activeTool, setActiveTool } = useLeftToolbar();
@@ -71,26 +69,32 @@ export default function CanvasPage() {
   } = useObjects(canvasId);
   
   // Setup undo/redo with keyboard shortcuts (Ctrl+Z, Ctrl+Y)
-  const { canUndo, canRedo, undo, redo } = useHistory({
+  useHistory({
     addObject,
     updateObject,
     deleteObject,
   });
   
-  // Load Lookbook metadata
+  // Load Lookbook metadata and handle deletion
   useEffect(() => {
     if (!canvasId) return;
     
     // Subscribe to metadata changes
     const unsubscribe = subscribeToLookbook(canvasId, (lookbook) => {
-      setCurrentLookbook(lookbook);
+      if (!lookbook) {
+        // Canvas was deleted - redirect to mylookbooks
+        // This handles when owner deletes while others are viewing (Feature 9)
+        router.push('/mylookbooks');
+      } else {
+        setCurrentLookbook(lookbook);
+      }
     });
     
     return () => {
       unsubscribe();
       setCurrentLookbook(null);
     };
-  }, [canvasId, setCurrentLookbook]);
+  }, [canvasId, setCurrentLookbook, router]);
   
   // Subscribe to shape previews from other users
   useEffect(() => {
@@ -284,7 +288,7 @@ export default function CanvasPage() {
     setCursorPosition(position);
   }, []);
   
-  const handleObjectSelect = useCallback((objectId: string | null) => {
+  const handleObjectSelect = useCallback(() => {
     // This callback is kept for backwards compatibility but selection is now managed by store
     // ObjectRenderer will call store methods directly
   }, []);

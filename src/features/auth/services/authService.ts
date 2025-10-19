@@ -7,7 +7,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { getAuth } from '../lib/firebase';
+import { doc, setDoc, getFirestore } from 'firebase/firestore';
+import { getAuth, getApp } from '../lib/firebase';
 import { AuthFormData } from '../types';
 
 /**
@@ -60,5 +61,34 @@ export async function signInWithGoogle(): Promise<void> {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
   await signInWithPopup(auth, provider);
+}
+
+/**
+ * Sync user profile to Firestore (Feature 9)
+ * Called when user signs in/up to ensure user directory is populated for search
+ */
+export async function syncUserProfile(
+  userId: string,
+  email: string,
+  displayName?: string | null,
+  photoURL?: string | null
+): Promise<void> {
+  try {
+    const db = getFirestore(getApp());
+    const userRef = doc(db, `users/${userId}`);
+    
+    await setDoc(
+      userRef,
+      {
+        email,
+        displayName: displayName || email.split('@')[0],
+        photoURL: photoURL || null,
+      },
+      { merge: true } // Merge to avoid overwriting other fields
+    );
+  } catch (error) {
+    console.error('Failed to sync user profile:', error);
+    // Don't throw - this is a non-critical operation
+  }
 }
 

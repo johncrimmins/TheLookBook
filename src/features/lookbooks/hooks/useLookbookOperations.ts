@@ -37,11 +37,16 @@ export function useLookbookOperations() {
         lookbookNameExists(user.id, name)
       );
 
-      // Create Lookbook
-      const lookbook = await createLookbookService({
-        name,
-        ownerId: user.id,
-      });
+      // Create Lookbook (Feature 9: pass user info for collaborator entry)
+      const lookbook = await createLookbookService(
+        {
+          name,
+          ownerId: user.id,
+        },
+        user.email,
+        user.displayName,
+        user.photoURL
+      );
 
       // Add to store (optimistic)
       addLookbook(lookbook);

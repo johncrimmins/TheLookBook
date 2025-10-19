@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Lookbook } from '../types';
+import { Lookbook, Collaborator, Role } from '../types';
 
 interface LookbooksState {
   // State
@@ -7,6 +7,10 @@ interface LookbooksState {
   currentLookbook: Lookbook | null;
   loading: boolean;
   error: string | null;
+  
+  // Feature 9: Collaboration state
+  collaborators: Collaborator[];
+  currentUserRole: Role | null;
 
   // Actions
   setLookbooks: (lookbooks: Lookbook[]) => void;
@@ -16,6 +20,12 @@ interface LookbooksState {
   removeLookbook: (id: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  
+  // Feature 9: Collaboration actions
+  setCollaborators: (collaborators: Collaborator[]) => void;
+  addCollaboratorToState: (collaborator: Collaborator) => void;
+  removeCollaboratorFromState: (userId: string) => void;
+  setCurrentUserRole: (role: Role | null) => void;
 }
 
 export const useLookbooksStore = create<LookbooksState>((set) => ({
@@ -24,6 +34,8 @@ export const useLookbooksStore = create<LookbooksState>((set) => ({
   currentLookbook: null,
   loading: false,
   error: null,
+  collaborators: [],
+  currentUserRole: null,
 
   // Actions
   setLookbooks: (lookbooks) => set({ lookbooks }),
@@ -54,5 +66,20 @@ export const useLookbooksStore = create<LookbooksState>((set) => ({
   setLoading: (loading) => set({ loading }),
   
   setError: (error) => set({ error }),
+  
+  // Feature 9: Collaboration actions
+  setCollaborators: (collaborators) => set({ collaborators }),
+  
+  addCollaboratorToState: (collaborator) =>
+    set((state) => ({
+      collaborators: [...state.collaborators, collaborator],
+    })),
+  
+  removeCollaboratorFromState: (userId) =>
+    set((state) => ({
+      collaborators: state.collaborators.filter((c) => c.userId !== userId),
+    })),
+  
+  setCurrentUserRole: (role) => set({ currentUserRole: role }),
 }));
 

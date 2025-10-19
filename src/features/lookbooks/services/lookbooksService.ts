@@ -3,12 +3,9 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
   updateDoc,
-  deleteDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   Timestamp,
   writeBatch,
@@ -26,7 +23,10 @@ function getDb() {
  * Create a new Lookbook
  */
 export async function createLookbook(
-  data: CreateLookbookData
+  data: CreateLookbookData,
+  userEmail?: string,
+  userDisplayName?: string,
+  userPhotoURL?: string
 ): Promise<Lookbook> {
   const db = getDb();
   const canvasRef = doc(collection(db, 'canvases'));
@@ -40,8 +40,10 @@ export async function createLookbook(
     updatedAt: now,
   };
 
+  const batch = writeBatch(db);
+
   // Create canvas document
-  await setDoc(canvasRef, lookbook);
+  batch.set(canvasRef, lookbook);
 
   // Create user index entry
   const userCanvasRef = doc(db, `users/${data.ownerId}/canvases/${canvasRef.id}`);
@@ -49,7 +51,19 @@ export async function createLookbook(
     role: 'owner',
     lastOpened: now,
   };
-  await setDoc(userCanvasRef, userIndex);
+  batch.set(userCanvasRef, userIndex);
+
+  // Feature 9: Create owner collaborator entry
+  const collaboratorRef = doc(db, `canvases/${canvasRef.id}/collaborators/${data.ownerId}`);
+  batch.set(collaboratorRef, {
+    email: userEmail || '',
+    displayName: userDisplayName,
+    photoURL: userPhotoURL,
+    role: 'owner',
+    addedAt: now,
+  });
+
+  await batch.commit();
 
   return lookbook;
 }
@@ -127,6 +141,56 @@ export function subscribeToUserLookbooks(
         callback(validLookbooks);
       } catch (error) {
         console.error('Error loading Lookbooks:', error);
+        if (onError && error instanceof Error) {
+          onError(error);
+        }
+      }
+    },
+    (error) => {
+      console.error('Lookbooks subscription error:', error);
+      if (onError) {
+        onError(error);
+      }
+    }
+  );
+}
+
+/**
+ * Subscribe to user's Lookbooks filtered by role (Feature 9)
+ */
+export function subscribeToUserLookbooksByRole(
+  userId: string,
+  role: 'owner' | 'designer',
+  callback: (lookbooks: Lookbook[]) => void,
+  onError?: (error: Error) => void
+): () => void {
+  const db = getDb();
+  const userCanvasesRef = collection(db, `users/${userId}/canvases`);
+  const roleQuery = query(userCanvasesRef, where('role', '==', role));
+
+  return onSnapshot(
+    roleQuery,
+    async (snapshot) => {
+      try {
+        if (snapshot.docs.length === 0) {
+          callback([]);
+          return;
+        }
+
+        // Fetch full canvas metadata for each
+        const lookbooksPromises = snapshot.docs.map(async (userCanvasDoc) => {
+          const canvasId = userCanvasDoc.id;
+          return getLookbook(canvasId);
+        });
+
+        const lookbooks = await Promise.all(lookbooksPromises);
+        const validLookbooks = lookbooks
+          .filter((lb): lb is Lookbook => lb !== null)
+          .sort((a, b) => b.updatedAt.seconds - a.updatedAt.seconds);
+
+        callback(validLookbooks);
+      } catch (error) {
+        console.error('Error loading Lookbooks by role:', error);
         if (onError && error instanceof Error) {
           onError(error);
         }

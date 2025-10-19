@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // ✅ PRODUCTION RULES - CollabCanvas v3
-    // Last Updated: 2025-10-19
+    // Last Updated: 2025-10-19 (Feature 9: Collaboration)
     
     function isAuthenticated() {
       return request.auth != null;
@@ -12,18 +12,43 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    // Canvas metadata - authenticated users can read/write
+    // Feature 9: Check if user is a collaborator (owner or designer)
+    function isCollaborator(canvasId) {
+      return exists(/databases/$(database)/documents/canvases/$(canvasId)/collaborators/$(request.auth.uid));
+    }
+    
+    // Feature 9: Check if user is owner of canvas
+    function isCanvasOwner(canvasId) {
+      let collaborator = get(/databases/$(database)/documents/canvases/$(canvasId)/collaborators/$(request.auth.uid));
+      return collaborator.data.role == 'owner';
+    }
+    
+    // Canvas metadata - collaborators can read/write, authenticated users can create
     match /canvases/{canvasId} {
-      allow read, write: if isAuthenticated();
+      // Allow creation of new canvas (for initial Lookbook creation)
+      allow create: if isAuthenticated();
+      // Allow read/update/delete only for collaborators
+      allow read, update: if isAuthenticated() && isCollaborator(canvasId);
+      allow delete: if isAuthenticated() && isCanvasOwner(canvasId);
       
-      // Objects subcollection
+      // Objects subcollection - all collaborators can edit
       match /objects/{objectId} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isAuthenticated() && isCollaborator(canvasId);
       }
       
-      // Layers subcollection
+      // Layers subcollection - all collaborators can edit
       match /layers/{layerId} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isAuthenticated() && isCollaborator(canvasId);
+      }
+      
+      // Collaborators subcollection (Feature 9)
+      match /collaborators/{userId} {
+        // Allow creating your own collaborator entry (for initial owner)
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+        // Read if you're a collaborator
+        allow read: if isAuthenticated() && isCollaborator(canvasId);
+        // Only owners can modify collaborators
+        allow update, delete: if isAuthenticated() && isCanvasOwner(canvasId);
       }
     }
     

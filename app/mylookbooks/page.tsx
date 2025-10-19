@@ -1,13 +1,13 @@
 'use client';
 
 import { ProtectedRoute, UserProfile } from '@/features/auth';
-import { useLookbooks, useLookbookOperations } from '@/features/lookbooks';
+import { useLookbooksByRole, useLookbookOperations } from '@/features/lookbooks';
 import EmptyState from '@/features/lookbooks/components/EmptyState';
 import CreateButton from '@/features/lookbooks/components/CreateButton';
 import LookbookGrid from '@/features/lookbooks/components/LookbookGrid';
 
 export default function MyLookbooksPage() {
-  const { lookbooks, loading, error } = useLookbooks();
+  const { ownedLookbooks, sharedLookbooks, loading, error } = useLookbooksByRole();
   const { createLookbook, renameLookbook, deleteLookbook, isCreating } =
     useLookbookOperations();
 
@@ -50,9 +50,6 @@ export default function MyLookbooksPage() {
                 <h2 className="text-xl text-gray-700">My Lookbooks</h2>
               </div>
               <div className="flex items-center gap-4">
-                {!loading && lookbooks.length > 0 && (
-                  <CreateButton onClick={handleCreate} loading={isCreating} />
-                )}
                 <UserProfile />
               </div>
             </div>
@@ -75,14 +72,48 @@ export default function MyLookbooksPage() {
                 <p className="text-sm mt-2">{error}</p>
               </div>
             </div>
-          ) : lookbooks.length === 0 ? (
+          ) : ownedLookbooks.length === 0 && sharedLookbooks.length === 0 ? (
             <EmptyState onCreateClick={handleCreate} />
           ) : (
-            <LookbookGrid
-              lookbooks={lookbooks}
-              onRename={handleRename}
-              onDelete={handleDelete}
-            />
+            /* Feature 9: Split View Layout */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* My Lookbooks Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900">My Lookbooks</h2>
+                  <CreateButton onClick={handleCreate} loading={isCreating} />
+                </div>
+                {ownedLookbooks.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <p className="text-gray-500">No Lookbooks yet</p>
+                    <p className="text-sm text-gray-400 mt-1">Create your first one above</p>
+                  </div>
+                ) : (
+                  <LookbookGrid
+                    lookbooks={ownedLookbooks}
+                    onRename={handleRename}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </div>
+
+              {/* Shared With Me Section */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900">Shared With Me</h2>
+                {sharedLookbooks.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <p className="text-gray-500">No shared Lookbooks</p>
+                    <p className="text-sm text-gray-400 mt-1">Others can share Lookbooks with you</p>
+                  </div>
+                ) : (
+                  <LookbookGrid
+                    lookbooks={sharedLookbooks}
+                    onRename={handleRename}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </div>
+            </div>
           )}
         </main>
       </div>
