@@ -6,7 +6,7 @@ import { Pin, PinOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useUIPreferencesStore } from '../lib/uiPreferencesStore';
 import { SidebarPanel } from './SidebarPanel';
-import { LayerPanel } from './LayerPanel';
+import { LayerList } from './LayerList';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
 import { PropertyInput } from './PropertyInput';
@@ -285,13 +285,13 @@ export function RightSidebar({ canvasId }: RightSidebarProps) {
           </div>
 
           {/* Layers Panel - 39% */}
-          <div className="flex-[39] overflow-hidden">
+          <div className="flex-[39] overflow-hidden flex flex-col">
             <SidebarPanel
               title="Layers"
               isExpanded={isLayersExpanded}
               onToggle={toggleLayers}
             >
-              <LayerPanel />
+              <LayerList />
             </SidebarPanel>
           </div>
         </div>

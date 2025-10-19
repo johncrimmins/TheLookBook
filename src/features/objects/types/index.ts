@@ -20,7 +20,10 @@ export interface CanvasObject {
   // Optional: tracks which user is currently transforming this object
   transformingBy?: string;
   
-  // Layer properties (optional, backwards compatible)
+  // Layer assignment (hierarchical layers)
+  layerId: string; // ID of the layer this object belongs to
+  
+  // Object properties (optional, backwards compatible)
   name?: string; // Display name in layers panel (auto-generated if not provided)
   visible?: boolean; // Visibility state (default: true)
   locked?: boolean; // Lock state - prevents editing/interactions (default: false)
@@ -77,3 +80,7 @@ export interface BoundingBox {
   width: number;
   height: number;
 }
+
+// Re-export layer types
+export type { Layer, LayerWithObjects, LayerState } from './layer';
+export { DEFAULT_LAYER_ID, DEFAULT_LAYER_NAME } from './layer';

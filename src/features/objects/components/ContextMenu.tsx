@@ -1,13 +1,15 @@
 // Context menu for canvas objects - traditional right-click action menu
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Separator } from '@/shared/components/ui/separator';
 import { Button } from '@/shared/components/ui/button';
+import { Check, ChevronRight } from 'lucide-react';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
 import { useUIPreferencesStore } from '../lib/uiPreferencesStore';
+import { useObjectsStore } from '../lib/objectsStore';
 
 interface ContextMenuProps {
   canvasId: string;
@@ -21,6 +23,11 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   const setPropertiesPanel = useCanvasStore((state) => state.setPropertiesPanel);
   const setRightSidebarOpen = useUIPreferencesStore((state) => state.setRightSidebarOpen);
   const { objectsMap, deleteObject, bringToFront, sendToBack, selectedIds, bulkDelete, bulkDuplicate, bulkCopy } = useObjects(canvasId);
+  
+  // Layer state
+  const layers = useObjectsStore((state) => state.layers);
+  const assignObjectsToLayer = useObjectsStore((state) => state.assignObjectsToLayer);
+  const [showLayerSubmenu, setShowLayerSubmenu] = useState(false);
 
   // Close menu on ESC key
   const handleKeyDown = useCallback(
@@ -114,6 +121,19 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   // Check if we're in multi-select mode (clicked object is part of selection)
   const isMultiSelect = selectedIds.length > 1 && selectedIds.includes(contextMenu.objectId);
   const selectionCount = selectedIds.length;
+  
+  // Get current object's layer
+  const currentLayerId = object.layerId;
+  
+  // Handle move to layer
+  const handleMoveToLayer = (layerId: string) => {
+    if (isMultiSelect) {
+      assignObjectsToLayer(selectedIds, layerId);
+    } else {
+      assignObjectsToLayer([contextMenu.objectId], layerId);
+    }
+    setContextMenu(null);
+  };
 
   return (
     <>
@@ -201,6 +221,62 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             {isMultiSelect ? `Duplicate All (${selectionCount})` : 'Duplicate'}
             <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
           </Button>
+
+          <Separator />
+          
+          {/* Move to Layer - with submenu */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setShowLayerSubmenu(true)}
+            onMouseLeave={() => setShowLayerSubmenu(false)}
+          >
+            <Button
+              variant="ghost"
+              className="w-full justify-between h-8 px-2 text-sm font-normal"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="mr-2 h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 4h16v16H4z" />
+                  <path d="M8 8h8v8H8z" />
+                </svg>
+                Move to Layer
+              </div>
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+            
+            {/* Layer Submenu */}
+            {showLayerSubmenu && (
+              <Card className="absolute left-full top-0 ml-1 w-48 p-1 shadow-lg z-50">
+                <div className="space-y-0.5">
+                  {layers.map((layer) => (
+                    <Button
+                      key={layer.id}
+                      variant="ghost"
+                      className="w-full justify-between h-8 px-2 text-sm font-normal"
+                      onClick={() => handleMoveToLayer(layer.id)}
+                    >
+                      <span className="truncate">{layer.name}</span>
+                      {currentLayerId === layer.id && (
+                        <Check className="w-4 h-4 ml-2 flex-shrink-0" />
+                      )}
+                    </Button>
+                  ))}
+                  {layers.length === 0 && (
+                    <div className="px-2 py-1 text-xs text-gray-400">No layers available</div>
+                  )}
+                </div>
+              </Card>
+            )}
+          </div>
 
           <Separator />
 

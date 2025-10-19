@@ -1,18 +1,44 @@
 // Selection utilities for multi-select feature
-import { CanvasObject, BoundingBox } from '../types';
+import { CanvasObject, BoundingBox, Layer } from '../types';
 
 /**
  * Check if an object is selectable
- * An object is selectable if it's visible and not hidden
+ * An object is selectable if it's visible (both object and layer)
+ * Uses AND logic: object.visible !== false AND layer.visible !== false
  * Note: Locked objects can be selected but not modified
  * 
  * @param object - Canvas object to check
+ * @param layer - Optional layer the object belongs to
  * @returns true if object can be selected, false otherwise
  */
-export function isObjectSelectable(object: CanvasObject): boolean {
-  // Object is selectable if visible is undefined or true
-  // visible === false means hidden (not selectable)
-  return object.visible !== false;
+export function isObjectSelectable(object: CanvasObject, layer?: Layer): boolean {
+  // Check object visibility
+  const objectVisible = object.visible !== false;
+  
+  // Check layer visibility (if layer provided)
+  const layerVisible = layer ? layer.visible !== false : true;
+  
+  // AND logic: both must be visible
+  return objectVisible && layerVisible;
+}
+
+/**
+ * Check if an object is editable (can be modified)
+ * Uses AND logic: object.locked !== true AND layer.locked !== true
+ * 
+ * @param object - Canvas object to check
+ * @param layer - Optional layer the object belongs to
+ * @returns true if object can be edited, false otherwise
+ */
+export function isObjectEditable(object: CanvasObject, layer?: Layer): boolean {
+  // Check object lock state
+  const objectUnlocked = object.locked !== true;
+  
+  // Check layer lock state (if layer provided)
+  const layerUnlocked = layer ? layer.locked !== true : true;
+  
+  // AND logic: both must be unlocked
+  return objectUnlocked && layerUnlocked;
 }
 
 /**
@@ -57,17 +83,22 @@ export function doBoxesIntersect(box1: BoundingBox, box2: BoundingBox): boolean 
  * 
  * @param objects - Record of all canvas objects
  * @param selectionBox - The marquee selection box
+ * @param layers - Optional record of layers for layer-aware filtering
  * @returns Array of object IDs that intersect the selection box
  */
 export function getObjectsInBox(
   objects: Record<string, CanvasObject>,
-  selectionBox: BoundingBox
+  selectionBox: BoundingBox,
+  layers?: Record<string, Layer>
 ): string[] {
   const selectedIds: string[] = [];
 
   for (const [id, object] of Object.entries(objects)) {
-    // Check if object is selectable (visible, not hidden)
-    if (!isObjectSelectable(object)) {
+    // Get layer if available
+    const layer = layers && object.layerId ? layers[object.layerId] : undefined;
+    
+    // Check if object is selectable (visible, not hidden, considering layer)
+    if (!isObjectSelectable(object, layer)) {
       continue;
     }
 

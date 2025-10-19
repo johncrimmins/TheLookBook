@@ -37,7 +37,7 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
   
   const { viewport, pan, zoom, screenToCanvas } = useCanvas();
   const { cursors, broadcastCursor } = usePresence(canvasId);
-  const { objects } = useObjectsStore();
+  const { objects, layers } = useObjectsStore();
   const { selectMultiple, clearSelection } = useSelectionStore();
   
   // Update dimensions on resize
@@ -189,7 +189,12 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
       // Only select if marquee has meaningful size (> 5px in both dimensions)
       if (width > 5 && height > 5) {
         const selectionBox = { x, y, width, height };
-        const selectedIds = getObjectsInBox(objects, selectionBox);
+        // Convert layers array to record for getObjectsInBox
+        const layersRecord = layers.reduce((acc, layer) => {
+          acc[layer.id] = layer;
+          return acc;
+        }, {} as Record<string, any>);
+        const selectedIds = getObjectsInBox(objects, selectionBox, layersRecord);
         selectMultiple(selectedIds);
       } else {
         // If marquee is too small, treat as click (clear selection)

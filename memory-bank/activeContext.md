@@ -8,13 +8,27 @@
 
 ✅ **Complete:** Feature 5B-1 (Toolbar Architecture Refactor)
 ✅ **Complete:** Feature 6 (Multi-Select) - Full implementation with 3-store refactor
-⚠️ **Incorrect Implementation:** Feature 5B-2 (Flat Layers) - Will be replaced by Feature 7
-📋 **Next:** Feature 7 (Hierarchical Layers) - PRD ready
+✅ **Complete:** Feature 7 (Hierarchical Layers System) - Replaces Feature 5B-2
+⚠️ **Known Issues:** Minor bugs in layer implementation need testing
+📋 **Next:** Bug fixes & Phase 2 planning
 
 ### Important Note
-Feature 5B-2 was implemented with an **incorrect flat structure** (one object = one layer). This will be replaced by Feature 7 (Hierarchical Layers System) which implements proper layer grouping (layers contain multiple objects).
+Feature 7 (Hierarchical Layers System) has replaced Feature 5B-2's incorrect flat structure. Layers now properly group multiple objects (Photoshop-style), with visibility/lock inheritance and full Firestore sync.
 
 ## Recent Changes
+- **Feature 7: Hierarchical Layers System Complete (2025-10-19)**
+  - ✅ Default Layer (auto-created, cannot be deleted/renamed)
+  - ✅ Create, rename, delete layers with auto-generated names
+  - ✅ Expand/collapse layers showing nested objects with 32x32 thumbnails
+  - ✅ Visibility & lock inheritance (AND logic: object + layer)
+  - ✅ "Move to Layer" via context menu submenu
+  - ✅ LayerModal for bulk object assignment with search
+  - ✅ Real-time Firestore sync for all layer operations
+  - ✅ Integration with multi-select (marquee respects layer state)
+  - ✅ Migration: objects without layerId auto-assigned to Default Layer
+  - ⚠️ **Known Issues:** Minor bugs need testing/fixes
+  - **Files Created:** 5 new (Layer, LayerList, LayerModal, CreateLayerButton, layer.ts)
+  - **Files Updated:** 9 files (stores, services, components)
 - **Feature 6: Multi-Select Complete (2025-10-19)**
   - ✅ Marquee selection (click+drag on empty canvas)
   - ✅ Bulk operations: move, delete, duplicate, copy/paste
@@ -27,18 +41,7 @@ Feature 5B-2 was implemented with an **incorrect flat structure** (one object = 
     - `uiPreferencesStore` - UI preferences (localStorage)
     - `objectsStore` - Domain data only (objects, layer management)
   - **Bug Fixes:** Pan tool, paste format, delete key, right-click selection
-- **Feature 5B-2: Incorrect Flat Layers Implementation (2025-10-19)**
-  - ⚠️ Implemented with flat structure (one object = one layer) - INCORRECT
-  - Will be replaced by Feature 7 (Hierarchical Layers System)
-  - Reusable components created: LayerThumbnail, rename logic, ShadCN integration
-- **PRDs Created (2025-10-19)**
-  - Feature 6: Multi-Select (~245 lines) - COMPLETE ✅
-  - Feature 7: Hierarchical Layers System (~226 lines) - Ready for implementation
-- **Feature 5B-1: Toolbar Architecture Refactor Complete (2025-10-19)**
-  - Left fixed toolbar (60px) with tool selection (V/R/C/H shortcuts)
-  - Right pinnable sidebar (320px) with Properties + Layers sections (61/39 split)
-  - localStorage persistence, auto-open sidebar on "Format Shape"
-  - Generic SidebarPanel component ready for future features
+
 
 
 ## Next Steps: Phase 1 Canvas Improvements
@@ -46,9 +49,9 @@ Feature 5B-2 was implemented with an **incorrect flat structure** (one object = 
 ### Implementation Status
 - ✅ Features 1-5: Context Menu, Duplicate, Undo/Redo, Copy/Paste, Z-Index
 - ✅ Feature 5B-1: Toolbar Refactor (COMPLETE)
-- ⚠️ Feature 5B-2: Flat Layers (INCORRECT - will be replaced)
 - ✅ Feature 6: Multi-Select (COMPLETE)
-- 📋 Feature 7: Hierarchical Layers (PRD ready - implement next)
+- ✅ Feature 7: Hierarchical Layers System (COMPLETE - replaces 5B-2)
+- 📋 **Next:** Bug fixes, testing, Phase 2 planning
 
 ### Architectural Decisions
 See systemPatterns.md for all technical decisions. Key choices:
@@ -67,9 +70,9 @@ See systemPatterns.md for all technical decisions. Key choices:
 - **Layer Inheritance**: Visibility/lock state inherited from layer to objects (AND logic) ✅
 
 ### Key Considerations
-- Feature 5B-2 flat layers code will be refactored/replaced by Feature 7
-- Reusable components from 5B-2: LayerThumbnail, rename logic
+- Feature 7 complete but needs testing for minor bugs
 - Performance needs validation with real concurrent users
+- Layer expanded state persisted to localStorage
 - New shapes: ~30 lines each (via useShapeInteractions)
 
 ## Blockers
@@ -82,5 +85,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - AI Agent & Lookbooks: Deferred post-Phase 2
 
 ---
-*Last Updated: 2025-10-19 - Feature 6 complete with 3-store refactor; Feature 7 ready for implementation*
+*Last Updated: 2025-10-19 - Feature 7 (Hierarchical Layers) complete; minor bugs to fix*
 

@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { ref, set, onValue, remove } from 'firebase/database';
 import { getFirestore, getRTDB } from '../lib/firebase';
-import { CanvasObject, ObjectUpdate, ShapePreview } from '../types';
+import { CanvasObject, ObjectUpdate, ShapePreview, Layer, DEFAULT_LAYER_ID, DEFAULT_LAYER_NAME } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -283,5 +283,93 @@ export function subscribeToShapePreviews(
   });
   
   return unsubscribe;
+}
+
+// ============ Layer Sync Functions ============
+
+/**
+ * Create a layer in Firestore
+ */
+export async function createLayer(canvasId: string, layer: Layer): Promise<void> {
+  const db = getFirestore();
+  const layerRef = doc(db, 'canvases', canvasId, 'layers', layer.id);
+  await setDoc(layerRef, layer);
+}
+
+/**
+ * Update a layer in Firestore
+ */
+export async function updateLayer(
+  canvasId: string,
+  layerId: string,
+  updates: Partial<Layer>
+): Promise<void> {
+  const db = getFirestore();
+  const layerRef = doc(db, 'canvases', canvasId, 'layers', layerId);
+  
+  await updateDoc(layerRef, {
+    ...updates,
+    updatedAt: Date.now(),
+  });
+}
+
+/**
+ * Delete a layer from Firestore
+ */
+export async function deleteLayer(canvasId: string, layerId: string): Promise<void> {
+  const db = getFirestore();
+  const layerRef = doc(db, 'canvases', canvasId, 'layers', layerId);
+  await deleteDoc(layerRef);
+}
+
+/**
+ * Get all layers for a canvas
+ */
+export async function getCanvasLayers(canvasId: string): Promise<Layer[]> {
+  const db = getFirestore();
+  const layersRef = collection(db, 'canvases', canvasId, 'layers');
+  const snapshot = await getDocs(layersRef);
+  
+  return snapshot.docs.map((doc) => doc.data() as Layer);
+}
+
+/**
+ * Subscribe to layers in Firestore (real-time sync)
+ */
+export function subscribeToCanvasLayers(
+  canvasId: string,
+  callback: (layers: Layer[]) => void
+): () => void {
+  const db = getFirestore();
+  const layersRef = collection(db, 'canvases', canvasId, 'layers');
+  
+  const unsubscribe = onSnapshot(layersRef, (snapshot) => {
+    const layers = snapshot.docs.map((doc) => doc.data() as Layer);
+    callback(layers);
+  });
+  
+  return unsubscribe;
+}
+
+/**
+ * Initialize Default Layer for a canvas if it doesn't exist
+ */
+export async function initializeDefaultLayer(canvasId: string): Promise<void> {
+  const db = getFirestore();
+  const defaultLayerRef = doc(db, 'canvases', canvasId, 'layers', DEFAULT_LAYER_ID);
+  const snapshot = await getDoc(defaultLayerRef);
+  
+  if (!snapshot.exists()) {
+    const defaultLayer: Layer = {
+      id: DEFAULT_LAYER_ID,
+      name: DEFAULT_LAYER_NAME,
+      visible: true,
+      locked: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    
+    await setDoc(defaultLayerRef, defaultLayer);
+  }
 }
 

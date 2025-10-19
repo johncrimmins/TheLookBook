@@ -19,6 +19,11 @@ import {
   broadcastTransformUpdate,
   broadcastTransformStart,
   broadcastTransformEnd,
+  subscribeToCanvasLayers,
+  initializeDefaultLayer,
+  createLayer as createLayerService,
+  updateLayer as updateLayerService,
+  deleteLayer as deleteLayerService,
 } from '../services/objectsService';
 
 /**
@@ -32,6 +37,45 @@ export function useObjects(canvasId: string | null) {
   const updateObjectInStore = useObjectsStore((state) => state.updateObject);
   const removeObject = useObjectsStore((state) => state.removeObject);
   const recordAction = useHistoryStore((state) => state.recordAction);
+  
+  // Layer state
+  const setLayers = useObjectsStore((state) => state.setLayers);
+  const createLayerInStore = useObjectsStore((state) => state.createLayer);
+  const updateLayerInStore = useObjectsStore((state) => state.updateLayer);
+  const deleteLayerInStore = useObjectsStore((state) => state.deleteLayer);
+  const initializeDefaultLayerInStore = useObjectsStore((state) => state.initializeDefaultLayer);
+  
+  // Initialize Default Layer and subscribe to layers
+  useEffect(() => {
+    if (!canvasId) return;
+    
+    let isSubscribed = true;
+    
+    // Initialize Default Layer
+    (async () => {
+      await initializeDefaultLayer(canvasId);
+      // Also initialize in store
+      initializeDefaultLayerInStore();
+    })();
+    
+    // Subscribe to layers
+    const unsubscribeLayers = subscribeToCanvasLayers(canvasId, (fetchedLayers) => {
+      if (isSubscribed) {
+        console.log(`[Layers] Loaded ${fetchedLayers.length} layers from Firestore for canvas: ${canvasId}`);
+        setLayers(fetchedLayers);
+        
+        // Initialize expanded state for all layers
+        fetchedLayers.forEach(layer => {
+          initializeDefaultLayerInStore();
+        });
+      }
+    });
+    
+    return () => {
+      isSubscribed = false;
+      unsubscribeLayers();
+    };
+  }, [canvasId, setLayers, initializeDefaultLayerInStore]);
   
   // Subscribe to objects on mount
   useEffect(() => {
@@ -619,6 +663,38 @@ export function useObjects(canvasId: string | null) {
     ).catch(console.error);
   }, [canvasId, user, selectedIds, getSelectedObjects, recordAction, updateObjectInStore]);
 
+  // Layer operations with Firestore sync
+  const createLayer = useCallback(async (name?: string) => {
+    if (!canvasId) return;
+    
+    const newLayer = createLayerInStore(name);
+    
+    // Sync to Firestore
+    await createLayerService(canvasId, newLayer).catch(console.error);
+    
+    return newLayer;
+  }, [canvasId, createLayerInStore]);
+  
+  const updateLayer = useCallback(async (layerId: string, updates: Record<string, unknown>) => {
+    if (!canvasId) return;
+    
+    // Update in store (optimistic)
+    updateLayerInStore(layerId, updates);
+    
+    // Sync to Firestore
+    await updateLayerService(canvasId, layerId, updates).catch(console.error);
+  }, [canvasId, updateLayerInStore]);
+  
+  const deleteLayer = useCallback(async (layerId: string) => {
+    if (!canvasId) return;
+    
+    // Delete in store
+    deleteLayerInStore(layerId);
+    
+    // Sync to Firestore
+    await deleteLayerService(canvasId, layerId).catch(console.error);
+  }, [canvasId, deleteLayerInStore]);
+
   return {
     objects: Object.values(objects),
     objectsMap: objects,
@@ -643,6 +719,10 @@ export function useObjects(canvasId: string | null) {
     bulkPaste,
     bulkMove,
     bulkUpdateProperty,
+    // Layer operations
+    createLayer,
+    updateLayer,
+    deleteLayer,
   };
 }
 

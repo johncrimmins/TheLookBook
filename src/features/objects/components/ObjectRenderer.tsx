@@ -6,6 +6,8 @@ import { CanvasObject } from '../types';
 import { Rectangle } from './Rectangle';
 import { Circle } from './Circle';
 import { useSelectionStore } from '../lib/selectionStore';
+import { useObjectsStore } from '../lib/objectsStore';
+import { isObjectSelectable, isObjectEditable } from '../lib/selectionUtils';
 
 interface ObjectRendererProps {
   objects: CanvasObject[];
@@ -40,6 +42,10 @@ export function ObjectRenderer({
 }: ObjectRendererProps) {
   // Use selection store for selection state
   const { selectedIds, selectObject, clearSelection } = useSelectionStore();
+  
+  // Read layers from store for visibility/lock filtering
+  const layers = useObjectsStore((state) => state.layers);
+  const getLayerById = useObjectsStore((state) => state.getLayerById);
   
   // Deselect when trigger changes
   useEffect(() => {
@@ -106,13 +112,16 @@ export function ObjectRenderer({
   };
   
   // Filter visible objects and sort by order for correct rendering (Konva best practice)
-  // Filter: only render objects where visible !== false (includes true and undefined)
+  // Filter: only render objects that are selectable (considering layer visibility)
   // Sort: Lower order renders first (back), higher order renders last (front)
   const visibleObjects = useMemo(() => {
     return [...objects]
-      .filter(obj => obj.visible !== false)
+      .filter(obj => {
+        const layer = obj.layerId ? getLayerById(obj.layerId) : undefined;
+        return isObjectSelectable(obj, layer);
+      })
       .sort((a, b) => a.order - b.order);
-  }, [objects]);
+  }, [objects, layers, getLayerById]);
   
   return (
     <>
@@ -121,6 +130,10 @@ export function ObjectRenderer({
         const isBeingTransformedByOther = !!(object.transformingBy && object.transformingBy !== currentUserId);
         const transformingUserName = object.transformingBy && presenceUsers[object.transformingBy]?.displayName;
         
+        // Check if object is editable (considering layer lock state)
+        const layer = object.layerId ? getLayerById(object.layerId) : undefined;
+        const isEditable = isObjectEditable(object, layer);
+        
         if (object.type === 'rectangle') {
           return (
             <Rectangle
@@ -128,12 +141,12 @@ export function ObjectRenderer({
               object={object}
               isSelected={isSelected}
               onSelect={() => handleSelect(object.id)}
-              onDragStart={() => handleDragStart(object.id)}
-              onDragMove={(pos) => handleDragMove(object.id, pos)}
-              onDragEnd={(pos) => handleDragEnd(object.id, pos)}
-              onTransformStart={() => handleTransformStart(object.id)}
-              onTransform={(updates) => handleTransform(object.id, updates)}
-              onTransformEnd={(updates) => handleTransformEnd(object.id, updates)}
+              onDragStart={() => isEditable && handleDragStart(object.id)}
+              onDragMove={(pos) => isEditable && handleDragMove(object.id, pos)}
+              onDragEnd={(pos) => isEditable && handleDragEnd(object.id, pos)}
+              onTransformStart={() => isEditable && handleTransformStart(object.id)}
+              onTransform={(updates) => isEditable && handleTransform(object.id, updates)}
+              onTransformEnd={(updates) => isEditable && handleTransformEnd(object.id, updates)}
               onContextMenu={(pos: { x: number; y: number }) => handleContextMenu(object.id, pos)}
               isBeingTransformedByOther={isBeingTransformedByOther}
               transformingUserName={transformingUserName}
@@ -148,12 +161,12 @@ export function ObjectRenderer({
               object={object}
               isSelected={isSelected}
               onSelect={() => handleSelect(object.id)}
-              onDragStart={() => handleDragStart(object.id)}
-              onDragMove={(pos) => handleDragMove(object.id, pos)}
-              onDragEnd={(pos) => handleDragEnd(object.id, pos)}
-              onTransformStart={() => handleTransformStart(object.id)}
-              onTransform={(updates) => handleTransform(object.id, updates)}
-              onTransformEnd={(updates) => handleTransformEnd(object.id, updates)}
+              onDragStart={() => isEditable && handleDragStart(object.id)}
+              onDragMove={(pos) => isEditable && handleDragMove(object.id, pos)}
+              onDragEnd={(pos) => isEditable && handleDragEnd(object.id, pos)}
+              onTransformStart={() => isEditable && handleTransformStart(object.id)}
+              onTransform={(updates) => isEditable && handleTransform(object.id, updates)}
+              onTransformEnd={(updates) => isEditable && handleTransformEnd(object.id, updates)}
               onContextMenu={(pos: { x: number; y: number }) => handleContextMenu(object.id, pos)}
               isBeingTransformedByOther={isBeingTransformedByOther}
               transformingUserName={transformingUserName}
