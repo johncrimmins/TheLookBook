@@ -19,6 +19,11 @@ export interface CanvasObject {
   updatedAt: number;
   // Optional: tracks which user is currently transforming this object
   transformingBy?: string;
+  
+  // Layer properties (optional, backwards compatible)
+  name?: string; // Display name in layers panel (auto-generated if not provided)
+  visible?: boolean; // Visibility state (default: true)
+  locked?: boolean; // Lock state - prevents editing/interactions (default: false)
 }
 
 /**

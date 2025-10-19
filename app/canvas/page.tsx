@@ -2,12 +2,12 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import dynamicImport from 'next/dynamic';
 import Link from 'next/link';
 import { ProtectedRoute, UserProfile, useAuthStore } from '@/features/auth';
-import { Canvas, LeftToolbar, useCanvasStore, useLeftToolbar } from '@/features/canvas';
+import { useCanvasStore, useLeftToolbar } from '@/features/canvas';
 import { OnlineUsers, usePresenceStore } from '@/features/presence';
-import { ObjectRenderer, useObjects, broadcastShapePreview, subscribeToShapePreviews, ContextMenu, RightSidebar } from '@/features/objects';
-import { ShapePreview as ShapePreviewComponent } from '@/features/objects/components/ShapePreview';
+import { useObjects, broadcastShapePreview, subscribeToShapePreviews } from '@/features/objects';
 import type { ShapePreview as ShapePreviewType } from '@/features/objects/types';
 import { useHistory } from '@/features/history';
 import { Point } from '@/shared/types';
@@ -15,6 +15,14 @@ import { throttle } from '@/shared/lib/utils';
 import { copyToClipboard, pasteFromClipboard } from '@/shared/lib/clipboard';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
+
+// Dynamically import Canvas and Konva-dependent components to avoid SSR issues
+const Canvas = dynamicImport(() => import('@/features/canvas').then(mod => ({ default: mod.Canvas })), { ssr: false });
+const LeftToolbar = dynamicImport(() => import('@/features/canvas').then(mod => ({ default: mod.LeftToolbar })), { ssr: false });
+const ObjectRenderer = dynamicImport(() => import('@/features/objects').then(mod => ({ default: mod.ObjectRenderer })), { ssr: false });
+const ShapePreviewComponent = dynamicImport(() => import('@/features/objects/components/ShapePreview').then(mod => ({ default: mod.ShapePreview })), { ssr: false });
+const ContextMenu = dynamicImport(() => import('@/features/objects').then(mod => ({ default: mod.ContextMenu })), { ssr: false });
+const RightSidebar = dynamicImport(() => import('@/features/objects').then(mod => ({ default: mod.RightSidebar })), { ssr: false });
 
 // Tell Next.js not to prerender this page
 export const dynamic = 'force-dynamic';

@@ -23,11 +23,12 @@ All 5 core features deployed: Auth, Presence, Canvas, Objects, History + ShadCN 
 - [ ] Verify cursor sync <50ms target
 - [ ] Verify object sync <100ms target
 
-### Phase 1: Canvas Improvements (6 of 7 Complete - 86%)
+### Phase 1: Canvas Improvements (In Progress)
 - ✅ Features 1-5: Context Menu, Duplicate, Undo/Redo, Copy/Paste, Z-Index (complete)
 - ✅ Feature 5B-1: Toolbar Architecture Refactor (COMPLETE)
-- 📋 Feature 5B-2: Layers Panel (PRD ready, next to implement)
-- 📋 Feature 6: Multi-Select (PRD pending, ~300 lines estimated)
+- ⚠️ Feature 5B-2: Flat Layers (INCORRECT flat structure - will be replaced by Feature 7)
+- 📋 Feature 6: Multi-Select (PRD ready - 245 lines, implement next)
+- 📋 Feature 7: Hierarchical Layers System (PRD ready - 226 lines, implement after Feature 6)
 
 **Architectural Decisions:**
 - Clipboard: Shared utilities, not separate feature
@@ -36,9 +37,9 @@ All 5 core features deployed: Auth, Presence, Canvas, Objects, History + ShadCN 
 
 
 ## In Progress
-✅ **Feature 5B-1 Complete:** Toolbar Architecture Refactor with left toolbar + right sidebar  
-📋 **Next:** Feature 5B-2 implementation (Layers Panel) - PRD ready  
-📋 **Then:** Feature 6 PRD creation + implementation (Multi-Select)
+⚠️ **Feature 5B-2 Complete (INCORRECT):** Flat layers implementation - will be replaced by Feature 7  
+📋 **Next:** Feature 6 implementation (Multi-Select) - PRD ready  
+📋 **Then:** Feature 7 implementation (Hierarchical Layers System) - PRD ready
 
 ## Known Issues
 - Performance benchmarks need validation with real concurrent users
@@ -51,13 +52,37 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 
 ## Metrics
 - **Core Platform:** 5/5 features (100%), deployed to Vercel
-- **Phase 1 Progress:** 6/7 features complete (86%)
-- **PRDs:** 7 complete, 1 pending (~2,000 lines total)
-- **UI Components:** 10 ShadCN components (added Tooltip, ScrollArea)
+- **Phase 1 Progress:** Features 1-5 + 5B-1 complete; 5B-2 incorrect; Features 6-7 PRDs ready
+- **PRDs:** 9 complete (Feature 6 & 7 ready, Feature 5B-2 incorrect flat structure)
+- **UI Components:** 10 ShadCN components (Tooltip, ScrollArea, Button, Input, etc.)
 - **Custom Hooks:** 6 (useAuth, usePresence, useCanvas, useObjects, useShapeInteractions, useLeftToolbar)
-- **New Components:** LeftToolbar, RightSidebar, SidebarPanel, LayersPlaceholder
+- **New Components:** LeftToolbar, RightSidebar, SidebarPanel, LayerThumbnail (reusable)
 
 ## Recent Updates
+
+### 2025-10-19 - Feature 5B-2: Incorrect Flat Layers Implementation ⚠️
+**Status:** INCORRECT - Flat structure (one object = one layer)  
+**Will be replaced by:** Feature 7 (Hierarchical Layers System)
+
+**What was built (reusable):**
+- LayerThumbnail component (32x32 canvas preview)
+- LayerItem component (rename logic, drag-drop patterns)
+- LayerPanel component (basic structure)
+- Extended CanvasObject with name, visible, locked properties
+- Store methods: toggleLayerVisibility, toggleLayerLock, reorderLayer
+
+**Why incorrect:**
+- Flat structure: Every object is its own layer (not hierarchical)
+- Should be: Layers contain multiple objects (Photoshop-style)
+
+**Next steps:**
+- Build Feature 6 (Multi-Select) first
+- Then refactor into Feature 7 (Hierarchical Layers) using reusable components
+
+### 2025-10-19 - PRDs Created ✅
+- **Feature 6:** Multi-Select (245 lines) - Marquee selection, bulk operations
+- **Feature 7:** Hierarchical Layers System (226 lines) - Layer groups, visibility/lock inheritance
+- **Build order confirmed:** Feature 6 → Feature 7
 
 ### 2025-10-19 - Feature 5B-1: Toolbar Architecture Refactor Complete ✅
 **Implementation:**
@@ -93,11 +118,11 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 
 
 ## Next Immediate Steps
-1. **Implement Feature 5B-2** - Layers Panel (PRD ready, replace LayersPlaceholder)
-2. **Create Feature 6 PRD** - Multi-Select (~300 lines)
-3. **Implement Feature 6** - Multi-Select
+1. **Implement Feature 6** - Multi-Select (PRD ready, ~3-4 days)
+2. **Implement Feature 7** - Hierarchical Layers System (PRD ready, ~3-4 days)
+3. **Refactor Feature 5B-2** - Replace flat layers with hierarchical implementation
 4. **Performance Testing** - Validate with concurrent users
 
 ---
-*Last Updated: 2025-10-19 - Feature 5B-1 (Toolbar Architecture Refactor) COMPLETE - 6/7 Phase 1 features done*
+*Last Updated: 2025-10-19 - Feature 5B-2 incorrect flat implementation; PRDs ready for Feature 6 & 7*
 

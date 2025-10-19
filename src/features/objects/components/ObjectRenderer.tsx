@@ -99,15 +99,18 @@ export function ObjectRenderer({
     }
   };
   
-  // Sort objects by order for correct rendering (Konva best practice)
-  // Lower order renders first (back), higher order renders last (front)
-  const sortedObjects = useMemo(() => {
-    return [...objects].sort((a, b) => a.order - b.order);
+  // Filter visible objects and sort by order for correct rendering (Konva best practice)
+  // Filter: only render objects where visible !== false (includes true and undefined)
+  // Sort: Lower order renders first (back), higher order renders last (front)
+  const visibleObjects = useMemo(() => {
+    return [...objects]
+      .filter(obj => obj.visible !== false)
+      .sort((a, b) => a.order - b.order);
   }, [objects]);
   
   return (
     <>
-      {sortedObjects.map((object) => {
+      {visibleObjects.map((object) => {
         const isSelected = object.id === selectedId;
         const isBeingTransformedByOther = !!(object.transformingBy && object.transformingBy !== currentUserId);
         const transformingUserName = object.transformingBy && presenceUsers[object.transformingBy]?.displayName;

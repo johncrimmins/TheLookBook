@@ -35,6 +35,8 @@ interface UseShapeInteractionsProps {
   // Visual feedback for when another user is transforming this object
   isBeingTransformedByOther?: boolean;
   transformingUserName?: string;
+  // Lock state - prevents all interactions when true
+  isLocked?: boolean;
 }
 
 /**
@@ -70,6 +72,7 @@ export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
   positionTransform,
   isBeingTransformedByOther = false,
   transformingUserName,
+  isLocked = false,
 }: UseShapeInteractionsProps) {
   const shapeRef = useRef<T>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -211,7 +214,11 @@ export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
   return {
     shapeRef,
     trRef,
-    handlers: {
+    handlers: isLocked ? {
+      // When locked, only allow selection (no drag/transform/context menu)
+      onClick: onSelect,
+      onTap: onSelect,
+    } : {
       onClick: onSelect,
       onTap: onSelect,
       onDragStart: handleDragStart,
@@ -228,6 +235,7 @@ export function useShapeInteractions<T extends Konva.Shape = Konva.Shape>({
       isBeingTransformed: isBeingTransformedByOther,
       transformingUserName,
     },
+    isLocked,
   };
 }
 

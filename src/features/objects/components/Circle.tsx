@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Circle as KonvaCircle, Transformer } from 'react-konva';
+import { Circle as KonvaCircle, Transformer, Text } from 'react-konva';
 import Konva from 'konva';
 import { CanvasObject } from '../types';
 import { useShapeInteractions } from '../hooks/useShapeInteractions';
@@ -37,6 +37,7 @@ export function Circle({
   transformingUserName,
 }: CircleProps) {
   const radius = Math.min(object.width, object.height) / 2;
+  const isLocked = object.locked === true;
 
   // Position transform to handle radius offset
   // Circle is rendered at center point, but our position is top-left corner
@@ -65,6 +66,7 @@ export function Circle({
     positionTransform,
     isBeingTransformedByOther,
     transformingUserName,
+    isLocked,
   });
 
   return (
@@ -76,11 +78,25 @@ export function Circle({
         radius={radius}
         fill={object.fill}
         opacity={object.opacity}
-        draggable
+        draggable={!isLocked}
         {...handlers}
       />
       
-      {isSelected && (
+      {/* Lock indicator when locked and selected */}
+      {isLocked && isSelected && (
+        <Text
+          x={object.position.x + radius}
+          y={object.position.y + radius}
+          text="🔒"
+          fontSize={24}
+          offsetX={12}
+          offsetY={12}
+          listening={false}
+        />
+      )}
+      
+      {/* Transformer only shown when selected and not locked */}
+      {isSelected && !isLocked && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {

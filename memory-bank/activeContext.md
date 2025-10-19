@@ -7,49 +7,57 @@
 ### Immediate Tasks
 
 ✅ **Complete:** Feature 5B-1 (Toolbar Architecture Refactor)
-📋 **Next:** Feature 5B-2 (Layers Panel)
-- Core platform complete and deployed (5 features + ShadCN UI)
-- 6 of 7 Phase 1 features complete (86%)
-- **UI Refactor Complete:** Toolbar Architecture Refactor finished
-  - 5B-1: Toolbar Architecture Refactor ✅ COMPLETE
-  - 5B-2: Layers Panel (ready to implement)
+⚠️ **Incorrect Implementation:** Feature 5B-2 (Flat Layers) - Will be replaced by Feature 7
+📋 **Next:** Feature 6 (Multi-Select) - PRD ready
+📋 **Then:** Feature 7 (Hierarchical Layers) - PRD ready
+
+### Important Note
+Feature 5B-2 was implemented with an **incorrect flat structure** (one object = one layer). This will be replaced by Feature 7 (Hierarchical Layers System) which implements proper layer grouping (layers contain multiple objects).
 
 ## Recent Changes
+- **Feature 5B-2: Incorrect Flat Layers Implementation (2025-10-19)**
+  - ⚠️ Implemented with flat structure (one object = one layer) - INCORRECT
+  - Will be replaced by Feature 7 (Hierarchical Layers System)
+  - Reusable components created: LayerThumbnail, rename logic, ShadCN integration
+- **PRDs Created (2025-10-19)**
+  - Feature 6: Multi-Select (~245 lines) - Ready for implementation
+  - Feature 7: Hierarchical Layers System (~226 lines) - Ready for implementation
+  - Build order: Feature 6 first, then Feature 7
 - **Feature 5B-1: Toolbar Architecture Refactor Complete (2025-10-19)**
   - Left fixed toolbar (60px) with tool selection (V/R/C/H shortcuts)
   - Right pinnable sidebar (320px) with Properties + Layers sections (61/39 split)
-  - localStorage persistence for sidebar state (open/closed, pinned, panel expansions)
-  - Auto-open sidebar on "Format Shape" action
-  - Generic SidebarPanel component ready for Feature 5B-2
-  - Bug fixes: userId/displayName undefined handling, pin state persistence
-- **Feature 5A: Z-Index Complete (2025-10-19)**
-  - Fixed keyboard shortcuts, implemented 2 stacking operations
-  - Context menu integration, real-time sync, undo/redo support
+  - localStorage persistence, auto-open sidebar on "Format Shape"
+  - Generic SidebarPanel component ready for future features
 
 
 ## Next Steps: Phase 1 Canvas Improvements
 
-### Implementation Status (6 of 7 Complete)
+### Implementation Status
 - ✅ Features 1-5: Context Menu, Duplicate, Undo/Redo, Copy/Paste, Z-Index
-- ✅ Feature 5B-1: Toolbar Refactor (COMPLETE - left toolbar + right sidebar)
-- 📋 Feature 5B-2: Layers Panel (next to implement)
-- 📋 Feature 6: Multi-Select (PRD pending, ~300 lines)
+- ✅ Feature 5B-1: Toolbar Refactor (COMPLETE)
+- ⚠️ Feature 5B-2: Flat Layers (INCORRECT - will be replaced)
+- 📋 Feature 6: Multi-Select (PRD ready - implement next)
+- 📋 Feature 7: Hierarchical Layers (PRD ready - implement after Feature 6)
 
 ### Architectural Decisions
 See systemPatterns.md for all technical decisions. Key choices:
 - Clipboard: Shared utilities, not separate feature
-- Selection state: Lives in objectsStore
-- Layers: Part of objects feature
-- PRDs: ~270-300 lines each (modular approach)
+- Selection state: Lives in objectsStore (Feature 6)
+- Layers: Hierarchical groups containing objects (Feature 7, not flat)
+- PRDs: ~220-250 lines each (under cursor rules limit)
 
 ## Active Decisions
 
-### Open Questions
-- **Multi-Select**: Marquee fully contained vs intersecting? (Recommend intersecting for faster UX)
+### Resolved Questions
+- **Multi-Select**: Intersecting mode (objects touching box are selected) ✅
+- **Layers**: Hierarchical (layers contain objects), not flat ✅
+- **Build Order**: Feature 6 (Multi-Select) → Feature 7 (Hierarchical Layers) ✅
+- **Layer Inheritance**: Visibility/lock state inherited from layer to objects (AND logic) ✅
 
 ### Key Considerations
+- Feature 5B-2 flat layers code will be refactored/replaced by Feature 7
+- Reusable components from 5B-2: LayerThumbnail, rename logic
 - Performance needs validation with real concurrent users
-- Architecture ready for AI agent integration
 - New shapes: ~30 lines each (via useShapeInteractions)
 
 ## Blockers
@@ -62,5 +70,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - AI Agent & Lookbooks: Deferred post-Phase 2
 
 ---
-*Last Updated: 2025-10-19 - Feature 5B-1 (Toolbar Architecture Refactor) COMPLETE*
+*Last Updated: 2025-10-19 - PRDs ready for Feature 6 & 7; Feature 5B-2 incorrect flat implementation noted*
 

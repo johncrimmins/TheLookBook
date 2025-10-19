@@ -6,7 +6,7 @@ import { Pin, PinOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useObjectsStore } from '../lib/objectsStore';
 import { SidebarPanel } from './SidebarPanel';
-import { LayersPlaceholder } from './LayersPlaceholder';
+import { LayerPanel } from './LayerPanel';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
 import { PropertyInput } from './PropertyInput';
@@ -225,7 +225,7 @@ export function RightSidebar({ canvasId }: RightSidebarProps) {
               isExpanded={isLayersExpanded}
               onToggle={toggleLayers}
             >
-              <LayersPlaceholder />
+              <LayerPanel />
             </SidebarPanel>
           </div>
         </div>

@@ -2,18 +2,23 @@
 const nextConfig = {
   reactStrictMode: true,
   webpack: (config, { isServer }) => {
-    // Exclude canvas module from server bundle (Konva dependency)
+    // Konva and react-konva are client-only libraries
+    // Exclude them from server-side bundling to avoid canvas module errors
     if (isServer) {
       config.externals = [
         ...(config.externals || []),
-        { canvas: 'commonjs canvas' },
+        'canvas',
+        'konva',
+        'react-konva',
       ];
     }
-    // Also ignore canvas warnings on client
+    
+    // Ignore canvas module on client as well (not needed in browser)
     config.resolve.fallback = {
       ...config.resolve.fallback,
       canvas: false,
     };
+    
     return config;
   },
 };

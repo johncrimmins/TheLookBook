@@ -1,7 +1,7 @@
 // Rectangle component - renders a draggable rectangle shape
 'use client';
 
-import { Rect, Transformer } from 'react-konva';
+import { Rect, Transformer, Text } from 'react-konva';
 import Konva from 'konva';
 import { CanvasObject } from '../types';
 import { useShapeInteractions } from '../hooks/useShapeInteractions';
@@ -35,6 +35,8 @@ export function Rectangle({
   isBeingTransformedByOther,
   transformingUserName,
 }: RectangleProps) {
+  const isLocked = object.locked === true;
+  
   const { shapeRef, trRef, handlers } = useShapeInteractions<Konva.Rect>({
     objectId: object.id,
     isSelected,
@@ -48,6 +50,7 @@ export function Rectangle({
     onContextMenu,
     isBeingTransformedByOther,
     transformingUserName,
+    isLocked,
   });
 
   return (
@@ -61,11 +64,25 @@ export function Rectangle({
         fill={object.fill}
         opacity={object.opacity}
         rotation={object.rotation}
-        draggable
+        draggable={!isLocked}
         {...handlers}
       />
       
-      {isSelected && (
+      {/* Lock indicator when locked and selected */}
+      {isLocked && isSelected && (
+        <Text
+          x={object.position.x + object.width / 2}
+          y={object.position.y + object.height / 2}
+          text="🔒"
+          fontSize={24}
+          offsetX={12}
+          offsetY={12}
+          listening={false}
+        />
+      )}
+      
+      {/* Transformer only shown when selected and not locked */}
+      {isSelected && !isLocked && (
         <Transformer
           ref={trRef}
           boundBoxFunc={(oldBox, newBox) => {
