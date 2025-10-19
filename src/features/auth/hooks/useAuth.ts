@@ -20,10 +20,8 @@ export function useAuth() {
       return;
     }
     
-    console.log('[Auth] Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        console.log('[Auth] User authenticated:', firebaseUser.email);
         const user: User = {
           id: firebaseUser.uid,
           email: firebaseUser.email || '',
@@ -32,7 +30,6 @@ export function useAuth() {
         };
         setUser(user);
       } else {
-        console.log('[Auth] User not authenticated');
         setUser(null);
       }
     });

@@ -61,7 +61,6 @@ export function useObjects(canvasId: string | null) {
     // Subscribe to layers
     const unsubscribeLayers = subscribeToCanvasLayers(canvasId, (fetchedLayers) => {
       if (isSubscribed) {
-        console.log(`[Layers] Loaded ${fetchedLayers.length} layers from Firestore for canvas: ${canvasId}`);
         setLayers(fetchedLayers);
         
         // Initialize expanded state for all layers
@@ -86,7 +85,6 @@ export function useObjects(canvasId: string | null) {
     // Subscribe to Firestore for initial load and persistence
     const unsubscribeFirestore = subscribeToCanvasObjects(canvasId, (fetchedObjects) => {
       if (isSubscribed) {
-        console.log(`[Persistence] Loaded ${fetchedObjects.length} objects from Firestore for canvas: ${canvasId}`);
         const objectsMap = fetchedObjects.reduce((acc, obj) => {
           acc[obj.id] = obj;
           return acc;
@@ -135,7 +133,6 @@ export function useObjects(canvasId: string | null) {
       
       try {
         const object = await createObjectService(canvasId, newObject);
-        console.log(`[Persistence] Created object ${object.id} in Firestore`);
         
         // Record in history before adding to store
         if (shouldRecord) {
@@ -248,7 +245,6 @@ export function useObjects(canvasId: string | null) {
       
       try {
         await updateObjectService(canvasId, objectId, { position });
-        console.log(`[Persistence] Updated object ${objectId} position in Firestore:`, position);
       } catch (error) {
         console.error('[Persistence] Failed to update object position:', error);
       }
