@@ -162,6 +162,21 @@
 - **Key Components:** Button, Input, Label, Card, Avatar, Badge, Separator, Popover
 - **Example:** `import { Button } from '@/shared/components/ui/button'`
 
+### Pattern 8: Three-Store Separation Pattern
+- **Purpose:** Clear boundaries between domain data, interaction state, and UI preferences
+- **Implementation:** Separate Zustand stores for different state concerns
+- **Structure:**
+  - `objectsStore` - Domain data (objects, layer management) - synced with backend
+  - `selectionStore` - Interaction state (selectedIds, bulk operations) - LOCAL ONLY, never persisted
+  - `uiPreferencesStore` - UI preferences (sidebar, panels) - localStorage persisted
+- **Benefits:** 
+  - Crystal clear boundaries (no accidental persistence)
+  - Single source of truth for each concern
+  - Easier to reason about what persists vs. ephemeral
+  - Clean separation of concerns
+- **Example:** Feature 6 (Multi-Select) uses all three stores
+- **Key Principle:** Selection is local UI state, manipulation triggers backend sync
+
 ## Component Relationships
 
 ### Core Features (MVP)
@@ -244,5 +259,5 @@ User drags → Local update (optimistic) → RTDB throttle (16ms) → Firestore 
 - JSDoc for public APIs, inline comments for complex logic
 
 ---
-*Last Updated: 2025-10-19 (Added Pattern 7: ShadCN Component Pattern)*
+*Last Updated: 2025-10-19 (Added Pattern 8: Three-Store Separation for Feature 6)*
 

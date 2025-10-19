@@ -11,21 +11,25 @@ export interface ClipboardData {
   version: string;
   timestamp: number;
   canvasId?: string;
-  object: Omit<CanvasObject, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
+  objects: Omit<CanvasObject, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>[];
 }
 
 /**
- * Copy an object to the clipboard
+ * Copy objects to the clipboard
  * Stores in localStorage for persistence across sessions
+ * Supports both single and multiple objects
  */
-export function copyToClipboard(object: CanvasObject, canvasId?: string): boolean {
+export function copyToClipboard(objects: CanvasObject | CanvasObject[], canvasId?: string): boolean {
   try {
+    // Normalize to array
+    const objectsArray = Array.isArray(objects) ? objects : [objects];
+    
     // Create clipboard data structure
     const clipboardData: ClipboardData = {
       version: CLIPBOARD_VERSION,
       timestamp: Date.now(),
       canvasId,
-      object: {
+      objects: objectsArray.map(object => ({
         type: object.type,
         position: { ...object.position },
         width: object.width,
@@ -34,7 +38,10 @@ export function copyToClipboard(object: CanvasObject, canvasId?: string): boolea
         fill: object.fill,
         opacity: object.opacity,
         order: object.order,
-      },
+        name: object.name,
+        visible: object.visible,
+        locked: object.locked,
+      })),
     };
 
     // Serialize and store
@@ -47,7 +54,7 @@ export function copyToClipboard(object: CanvasObject, canvasId?: string): boolea
 }
 
 /**
- * Paste an object from the clipboard
+ * Paste objects from the clipboard
  * Returns clipboard data if valid, null otherwise
  */
 export function pasteFromClipboard(): ClipboardData | null {
@@ -72,8 +79,18 @@ export function pasteFromClipboard(): ClipboardData | null {
     }
 
     // Validate required properties
-    if (!clipboardData.object || !clipboardData.object.type || !clipboardData.object.position) {
+    if (!clipboardData.objects || !Array.isArray(clipboardData.objects) || clipboardData.objects.length === 0) {
       console.warn('Invalid clipboard data structure');
+      return null;
+    }
+
+    // Validate each object has required properties
+    const allValid = clipboardData.objects.every(obj => 
+      obj && obj.type && obj.position
+    );
+    
+    if (!allValid) {
+      console.warn('Invalid clipboard object data');
       return null;
     }
 

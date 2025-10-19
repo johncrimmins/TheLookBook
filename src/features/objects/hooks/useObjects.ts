@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
-import { useObjectsStore } from '../lib/objectsStore';
+import { useObjectsStore, generateLayerName } from '../lib/objectsStore';
+import { useSelectionStore } from '../lib/selectionStore';
 import { useAuth } from '@/features/auth';
 import { CanvasObject, CreateObjectParams } from '../types';
 import { Point } from '@/shared/types';
@@ -385,6 +386,238 @@ export function useObjects(canvasId: string | null) {
     [objects, updateObject]
   );
 
+  // Get selection from selectionStore (now separate)
+  const { selectedIds } = useSelectionStore();
+  
+  // Helper to get selected objects
+  const getSelectedObjects = useCallback(() => {
+    return selectedIds
+      .map((id) => objects[id])
+      .filter(Boolean);
+  }, [selectedIds, objects]);
+
+  // Delete all selected objects with history
+  const bulkDelete = useCallback(async () => {
+    if (!canvasId || !user || selectedIds.length === 0) return;
+    
+    // Get selected objects before deletion
+    const selectedObjects = getSelectedObjects();
+    
+    // Record deletion of all selected objects
+    selectedObjects.forEach(obj => {
+      recordAction({
+        userId: user.id,
+        type: 'delete',
+        objectId: obj.id,
+        beforeState: obj,
+        afterState: null,
+      });
+    });
+    
+    // Delete from local store
+    selectedObjects.forEach(obj => {
+      removeObject(obj.id);
+    });
+    
+    // Delete from Firestore
+    await Promise.all(
+      selectedObjects.map(obj => deleteObjectService(canvasId, obj.id))
+    ).catch(console.error);
+    
+    // Clear selection
+    const { clearSelection } = useSelectionStore.getState();
+    clearSelection();
+  }, [canvasId, user, selectedIds, getSelectedObjects, recordAction, removeObject]);
+
+  // Duplicate all selected objects with history
+  const bulkDuplicate = useCallback(async () => {
+    if (!canvasId || !user || selectedIds.length === 0) return;
+    
+    const selectedObjects = getSelectedObjects();
+    const newIds: string[] = [];
+    const timestamp = Date.now();
+    
+    // Create duplicates
+    for (const original of selectedObjects) {
+      const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      newIds.push(newId);
+      
+      // Clone object with 20px offset and new ID
+      const duplicated: CanvasObject = {
+        ...original,
+        id: newId,
+        position: {
+          x: original.position.x + 20,
+          y: original.position.y + 20,
+        },
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        // Auto-generate new name for duplicate
+        name: generateLayerName(original.type, newId),
+      };
+      
+      // Record creation
+      recordAction({
+        userId: user.id,
+        type: 'create',
+        objectId: newId,
+        beforeState: null,
+        afterState: duplicated,
+      });
+      
+      // Add to local store
+      addObjectToStore(duplicated);
+      
+      // Persist to Firestore
+      const db = require('../lib/firebase').getFirestore();
+      const { doc, setDoc } = require('firebase/firestore');
+      const objectRef = doc(db, 'canvases', canvasId, 'objects', newId);
+      await setDoc(objectRef, duplicated);
+    }
+    
+    // Select the newly duplicated objects
+    const { selectMultiple } = useSelectionStore.getState();
+    selectMultiple(newIds);
+  }, [canvasId, user, selectedIds, getSelectedObjects, recordAction, addObjectToStore]);
+
+  // Copy selected objects to clipboard
+  const bulkCopy = useCallback(() => {
+    const selectedObjects = getSelectedObjects();
+    if (selectedObjects.length === 0) return false;
+    
+    const { copyToClipboard } = require('@/shared/lib/clipboard');
+    return copyToClipboard(selectedObjects, canvasId || undefined);
+  }, [getSelectedObjects, canvasId]);
+
+  // Paste objects from clipboard
+  const bulkPaste = useCallback(async () => {
+    if (!canvasId || !user) return;
+    
+    const { pasteFromClipboard } = require('@/shared/lib/clipboard');
+    const clipboardData = pasteFromClipboard();
+    
+    if (!clipboardData || !clipboardData.objects) return;
+    
+    const timestamp = Date.now();
+    const newObjects: CanvasObject[] = [];
+    
+    // Create new objects with offset
+    for (const clipboardObject of clipboardData.objects) {
+      const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const newObject: CanvasObject = {
+        ...clipboardObject,
+        id: newId,
+        position: {
+          x: clipboardObject.position.x + 20,
+          y: clipboardObject.position.y + 20,
+        },
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        createdBy: user.id,
+        // Auto-generate new name for pasted object
+        name: generateLayerName(clipboardObject.type, newId),
+      };
+      
+      newObjects.push(newObject);
+      
+      // Record creation
+      recordAction({
+        userId: user.id,
+        type: 'create',
+        objectId: newId,
+        beforeState: null,
+        afterState: newObject,
+      });
+      
+      // Add to store
+      addObjectToStore(newObject);
+      
+      // Persist to Firestore
+      const db = require('../lib/firebase').getFirestore();
+      const { doc, setDoc } = require('firebase/firestore');
+      const objectRef = doc(db, 'canvases', canvasId, 'objects', newId);
+      await setDoc(objectRef, newObject);
+    }
+    
+    // Select the newly pasted objects
+    const { selectMultiple } = useSelectionStore.getState();
+    selectMultiple(newObjects.map(obj => obj.id));
+  }, [canvasId, user, recordAction, addObjectToStore]);
+
+  // Move selected objects (used during bulk drag)
+  const bulkMove = useCallback(async (deltaX: number, deltaY: number) => {
+    if (!canvasId || !user || selectedIds.length === 0) return;
+    
+    // Get objects before move for history
+    const selectedObjects = getSelectedObjects();
+    const timestamp = Date.now();
+    
+    // Move each object
+    selectedObjects.forEach(obj => {
+      const newPosition = {
+        x: obj.position.x + deltaX,
+        y: obj.position.y + deltaY,
+      };
+      
+      // Record history
+      recordAction({
+        userId: user.id,
+        type: 'update',
+        objectId: obj.id,
+        beforeState: { position: obj.position },
+        afterState: { position: newPosition },
+      });
+      
+      // Update in store
+      updateObjectInStore(obj.id, {
+        position: newPosition,
+        updatedAt: timestamp,
+      });
+    });
+    
+    // Persist to Firestore
+    const updatedObjects = getSelectedObjects();
+    await Promise.all(
+      updatedObjects.map(obj => 
+        updateObjectService(canvasId, obj.id, { position: obj.position })
+      )
+    ).catch(console.error);
+  }, [canvasId, user, selectedIds, getSelectedObjects, recordAction, updateObjectInStore]);
+
+  // Update property for all selected objects
+  const bulkUpdateProperty = useCallback(async (property: string, value: unknown) => {
+    if (!canvasId || !user || selectedIds.length === 0) return;
+    
+    // Get objects before update for history
+    const selectedObjects = getSelectedObjects();
+    const timestamp = Date.now();
+    
+    // Update each object
+    selectedObjects.forEach(obj => {
+      // Record history
+      recordAction({
+        userId: user.id,
+        type: 'update',
+        objectId: obj.id,
+        beforeState: { [property]: (obj as never)[property] },
+        afterState: { [property]: value },
+      });
+      
+      // Update in store
+      updateObjectInStore(obj.id, {
+        [property]: value,
+        updatedAt: timestamp,
+      });
+    });
+    
+    // Persist to Firestore
+    await Promise.all(
+      selectedIds.map(id => 
+        updateObjectService(canvasId, id, { [property]: value })
+      )
+    ).catch(console.error);
+  }, [canvasId, user, selectedIds, getSelectedObjects, recordAction, updateObjectInStore]);
 
   return {
     objects: Object.values(objects),
@@ -402,6 +635,14 @@ export function useObjects(canvasId: string | null) {
     finishObjectDrag,
     bringToFront,
     sendToBack,
+    // Bulk operations
+    selectedIds,
+    bulkDelete,
+    bulkDuplicate,
+    bulkCopy,
+    bulkPaste,
+    bulkMove,
+    bulkUpdateProperty,
   };
 }
 

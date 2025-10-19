@@ -8,10 +8,14 @@ import { useCanvas } from '../hooks/useCanvas';
 import { usePresence } from '@/features/presence';
 import { UserCursor } from '@/features/presence';
 import { Point } from '@/shared/types';
+import { SelectionBox } from '@/features/objects/components/SelectionBox';
+import { getObjectsInBox } from '@/features/objects/lib/selectionUtils';
+import { useObjectsStore } from '@/features/objects/lib/objectsStore';
+import { useSelectionStore } from '@/features/objects/lib/selectionStore';
 
 interface CanvasProps {
   canvasId: string;
-  tool?: 'select' | 'rectangle' | 'circle';
+  tool?: 'select' | 'rectangle' | 'circle' | 'pan';
   children?: React.ReactNode;
   onCanvasClick?: (position?: Point) => void;
   onCursorMove?: (position: Point) => void;
@@ -25,8 +29,16 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
   const [lastPos, setLastPos] = useState<Point | null>(null);
   const [isOverShape, setIsOverShape] = useState(false);
   
+  // Marquee selection state
+  const [isDrawingMarquee, setIsDrawingMarquee] = useState(false);
+  const [marqueeStart, setMarqueeStart] = useState<Point | null>(null);
+  const [marqueeCurrent, setMarqueeCurrent] = useState<Point | null>(null);
+  const lastMarqueeUpdateRef = useRef<number>(0);
+  
   const { viewport, pan, zoom, screenToCanvas } = useCanvas();
   const { cursors, broadcastCursor } = usePresence(canvasId);
+  const { objects } = useObjectsStore();
+  const { selectMultiple, clearSelection } = useSelectionStore();
   
   // Update dimensions on resize
   useEffect(() => {
@@ -79,22 +91,30 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
       // Check if clicking on a shape (use screen coords for intersection test)
       const clickedOnShape = stage.getIntersection(pointerPosition);
       
+      // If clicking on empty canvas with select tool, start marquee selection
+      if (e.button === 0 && !clickedOnShape && tool === 'select') {
+        setIsDrawingMarquee(true);
+        setMarqueeStart(canvasPos);
+        setMarqueeCurrent(canvasPos);
+        clearSelection(); // Clear previous selection when starting new marquee
+        e.preventDefault();
+        return;
+      }
+      
       // If clicking on empty canvas, trigger canvas click callback
       if (e.button === 0 && !clickedOnShape) {
         if (onCanvasClick) {
           // For select tool, pass no position (for deselection)
           // For shape tools, pass canvas coordinates (for placement)
-          onCanvasClick(tool !== 'select' ? canvasPos : undefined);
+          onCanvasClick(tool !== 'select' && tool !== 'pan' ? canvasPos : undefined);
         }
       }
       
       // Allow panning if:
-      // 1. Using select tool AND not clicking on a shape (left click)
-      // 2. OR middle mouse button
+      // 1. Pan tool is active (left click)
+      // 2. Middle mouse button
       // 3. OR space key is pressed (we can add this later if needed)
-      const shouldPan = 
-        (tool === 'select' && e.button === 0 && !clickedOnShape) || // Left click on empty canvas with select tool
-        e.button === 1; // Middle mouse button
+      const shouldPan = (tool === 'pan' && e.button === 0 && !clickedOnShape) || e.button === 1;
       
       if (shouldPan) {
         setIsPanning(true);
@@ -102,7 +122,7 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
         e.preventDefault();
       }
     },
-    [tool, onCanvasClick, screenToCanvas]
+    [tool, onCanvasClick, screenToCanvas, clearSelection]
   );
   
   // Handle mouse move for panning, cursor broadcasting, and preview tracking
@@ -117,6 +137,16 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
           // Convert screen coordinates to canvas coordinates
           // (accounting for pan/zoom transformations)
           const canvasPos = screenToCanvas(pointerPosition);
+          
+          // Handle marquee selection update (throttled to 60 FPS = 16ms)
+          if (isDrawingMarquee && marqueeStart) {
+            const now = Date.now();
+            if (now - lastMarqueeUpdateRef.current >= 16) {
+              setMarqueeCurrent(canvasPos);
+              lastMarqueeUpdateRef.current = now;
+            }
+            return; // Skip other interactions while drawing marquee
+          }
           
           // Broadcast cursor position in canvas coordinates
           // Each user will convert to their own screen space for display
@@ -143,27 +173,60 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
         setLastPos({ x: e.clientX, y: e.clientY });
       }
     },
-    [isPanning, lastPos, pan, broadcastCursor, tool, onCursorMove, screenToCanvas]
+    [isPanning, lastPos, pan, broadcastCursor, tool, onCursorMove, screenToCanvas, isDrawingMarquee, marqueeStart]
   );
   
   // Handle mouse up
   const handleMouseUp = useCallback(() => {
+    // Complete marquee selection
+    if (isDrawingMarquee && marqueeStart && marqueeCurrent) {
+      // Calculate final marquee box
+      const x = Math.min(marqueeStart.x, marqueeCurrent.x);
+      const y = Math.min(marqueeStart.y, marqueeCurrent.y);
+      const width = Math.abs(marqueeCurrent.x - marqueeStart.x);
+      const height = Math.abs(marqueeCurrent.y - marqueeStart.y);
+      
+      // Only select if marquee has meaningful size (> 5px in both dimensions)
+      if (width > 5 && height > 5) {
+        const selectionBox = { x, y, width, height };
+        const selectedIds = getObjectsInBox(objects, selectionBox);
+        selectMultiple(selectedIds);
+      } else {
+        // If marquee is too small, treat as click (clear selection)
+        clearSelection();
+      }
+      
+      // Clear marquee state
+      setIsDrawingMarquee(false);
+      setMarqueeStart(null);
+      setMarqueeCurrent(null);
+    }
+    
     setIsPanning(false);
     setLastPos(null);
-  }, []);
+  }, [isDrawingMarquee, marqueeStart, marqueeCurrent, objects, selectMultiple, clearSelection]);
   
   // Handle mouse leave
   const handleMouseLeave = useCallback(() => {
     setIsPanning(false);
     setLastPos(null);
     setIsOverShape(false);
-  }, []);
+    
+    // Cancel marquee selection if user leaves canvas
+    if (isDrawingMarquee) {
+      setIsDrawingMarquee(false);
+      setMarqueeStart(null);
+      setMarqueeCurrent(null);
+    }
+  }, [isDrawingMarquee]);
   
   // Determine cursor style based on state
   const getCursorStyle = () => {
     if (isPanning) return 'grabbing';
+    if (isDrawingMarquee) return 'crosshair';
+    if (tool === 'pan') return 'grab';
     if (tool === 'select') {
-      return isOverShape ? 'move' : 'grab';
+      return isOverShape ? 'move' : 'default';
     }
     return 'crosshair';
   };
@@ -196,6 +259,11 @@ export function Canvas({ canvasId, tool = 'select', children, onCanvasClick, onC
         <Layer>
           {/* Objects will be rendered here */}
           {children}
+          
+          {/* Marquee selection box */}
+          {isDrawingMarquee && marqueeStart && marqueeCurrent && (
+            <SelectionBox startPos={marqueeStart} currentPos={marqueeCurrent} />
+          )}
         </Layer>
       </Stage>
       

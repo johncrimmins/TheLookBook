@@ -27,19 +27,19 @@ All 5 core features deployed: Auth, Presence, Canvas, Objects, History + ShadCN 
 - ✅ Features 1-5: Context Menu, Duplicate, Undo/Redo, Copy/Paste, Z-Index (complete)
 - ✅ Feature 5B-1: Toolbar Architecture Refactor (COMPLETE)
 - ⚠️ Feature 5B-2: Flat Layers (INCORRECT flat structure - will be replaced by Feature 7)
-- 📋 Feature 6: Multi-Select (PRD ready - 245 lines, implement next)
-- 📋 Feature 7: Hierarchical Layers System (PRD ready - 226 lines, implement after Feature 6)
+- ✅ Feature 6: Multi-Select (COMPLETE - Marquee selection, bulk operations, 3-store refactor)
+- 📋 Feature 7: Hierarchical Layers System (PRD ready - 226 lines, implement next)
 
 **Architectural Decisions:**
 - Clipboard: Shared utilities, not separate feature
-- Selection state: Lives in objects store
+- **3-Store Pattern:** objectsStore (domain data), selectionStore (local interaction), uiPreferencesStore (UI)
+- Selection state: LOCAL ONLY, never persisted
 - Layers: Part of objects feature
 
 
 ## In Progress
-⚠️ **Feature 5B-2 Complete (INCORRECT):** Flat layers implementation - will be replaced by Feature 7  
-📋 **Next:** Feature 6 implementation (Multi-Select) - PRD ready  
-📋 **Then:** Feature 7 implementation (Hierarchical Layers System) - PRD ready
+📋 **Next:** Feature 7 implementation (Hierarchical Layers System) - PRD ready
+⚠️ **Then:** Replace Feature 5B-2 flat layers with hierarchical implementation
 
 ## Known Issues
 - Performance benchmarks need validation with real concurrent users
@@ -52,13 +52,48 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 
 ## Metrics
 - **Core Platform:** 5/5 features (100%), deployed to Vercel
-- **Phase 1 Progress:** Features 1-5 + 5B-1 complete; 5B-2 incorrect; Features 6-7 PRDs ready
-- **PRDs:** 9 complete (Feature 6 & 7 ready, Feature 5B-2 incorrect flat structure)
+- **Phase 1 Progress:** Features 1-6 + 5B-1 complete; 5B-2 incorrect; Feature 7 PRD ready
+- **PRDs:** 10 complete (Feature 6 complete, Feature 7 ready)
+- **Zustand Stores:** 3 (objectsStore, selectionStore, uiPreferencesStore)
 - **UI Components:** 10 ShadCN components (Tooltip, ScrollArea, Button, Input, etc.)
 - **Custom Hooks:** 6 (useAuth, usePresence, useCanvas, useObjects, useShapeInteractions, useLeftToolbar)
-- **New Components:** LeftToolbar, RightSidebar, SidebarPanel, LayerThumbnail (reusable)
+- **New Components:** LeftToolbar, RightSidebar, SidebarPanel, LayerThumbnail, SelectionBox (reusable)
 
 ## Recent Updates
+
+### 2025-10-19 - Feature 6: Multi-Select Complete ✅
+**Status:** COMPLETE - Production-ready multi-select with marquee, bulk operations, and 3-store refactor
+
+**Features Implemented:**
+- Marquee selection (click+drag on empty canvas, 60 FPS)
+- Bulk operations: move, delete, duplicate, copy/paste
+- Multi-select drag (all objects move together maintaining relative positions)
+- Context menu integration (shows "Delete All (3)", "Duplicate All (3)", etc.)
+- Properties panel multi-select UI (shared properties, count badge)
+- Full history/undo support for all bulk operations
+- Smart selection (right-click preserves multi-selection)
+
+**Major Architecture Refactor - 3-Store Pattern:**
+- **`selectionStore.ts`** - Selection state (LOCAL ONLY, never persisted)
+  - selectedIds, selectObject, selectMultiple, clearSelection
+  - Basic bulk operations for store-level logic
+- **`uiPreferencesStore.ts`** - UI preferences (localStorage persisted)
+  - Sidebar open/closed/pinned, panel expanded/collapsed
+  - ONLY store using localStorage (clear persistence boundary)
+- **`objectsStore.ts`** - Domain data only (refactored)
+  - Objects data, layer management
+  - NO selection state, NO UI preferences
+
+**Bug Fixes:**
+- Pan tool now works (added 'pan' to Canvas tool types)
+- Paste uses new clipboard format (objects array)
+- Delete key deletes all selected objects
+- Right-click preserves multi-selection
+- Multi-select drag moves entire group
+- Repeated delete operations work correctly
+
+**Files Created:** 2 new stores, 1 component (SelectionBox)
+**Files Updated:** 8 files (Canvas, page, ObjectRenderer, RightSidebar, ContextMenu, useObjects, clipboard, etc.)
 
 ### 2025-10-19 - Feature 5B-2: Incorrect Flat Layers Implementation ⚠️
 **Status:** INCORRECT - Flat structure (one object = one layer)  
@@ -118,11 +153,10 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 
 
 ## Next Immediate Steps
-1. **Implement Feature 6** - Multi-Select (PRD ready, ~3-4 days)
-2. **Implement Feature 7** - Hierarchical Layers System (PRD ready, ~3-4 days)
-3. **Refactor Feature 5B-2** - Replace flat layers with hierarchical implementation
-4. **Performance Testing** - Validate with concurrent users
+1. **Implement Feature 7** - Hierarchical Layers System (PRD ready, ~3-4 days)
+2. **Refactor Feature 5B-2** - Replace flat layers with hierarchical implementation
+3. **Performance Testing** - Validate with concurrent users
 
 ---
-*Last Updated: 2025-10-19 - Feature 5B-2 incorrect flat implementation; PRDs ready for Feature 6 & 7*
+*Last Updated: 2025-10-19 - Feature 6 complete with 3-store refactor; Feature 7 ready*
 

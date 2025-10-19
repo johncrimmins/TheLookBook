@@ -1,10 +1,11 @@
 // Object renderer - renders all canvas objects
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { CanvasObject } from '../types';
 import { Rectangle } from './Rectangle';
 import { Circle } from './Circle';
+import { useSelectionStore } from '../lib/selectionStore';
 
 interface ObjectRendererProps {
   objects: CanvasObject[];
@@ -37,20 +38,25 @@ export function ObjectRenderer({
   presenceUsers = {},
   deselectTrigger,
 }: ObjectRendererProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Use selection store for selection state
+  const { selectedIds, selectObject, clearSelection } = useSelectionStore();
   
   // Deselect when trigger changes
   useEffect(() => {
     if (deselectTrigger !== undefined) {
-      setSelectedId(null);
+      clearSelection();
       if (onObjectSelect) {
         onObjectSelect(null);
       }
     }
-  }, [deselectTrigger, onObjectSelect]);
+  }, [deselectTrigger, onObjectSelect, clearSelection]);
   
   const handleSelect = (id: string) => {
-    setSelectedId(id);
+    // Don't change selection if clicking an already-selected object
+    // This prevents right-click from clearing multi-selection
+    if (!selectedIds.includes(id)) {
+      selectObject(id);
+    }
     if (onObjectSelect) {
       onObjectSelect(id);
     }
@@ -111,7 +117,7 @@ export function ObjectRenderer({
   return (
     <>
       {visibleObjects.map((object) => {
-        const isSelected = object.id === selectedId;
+        const isSelected = selectedIds.includes(object.id);
         const isBeingTransformedByOther = !!(object.transformingBy && object.transformingBy !== currentUserId);
         const transformingUserName = object.transformingBy && presenceUsers[object.transformingBy]?.displayName;
         

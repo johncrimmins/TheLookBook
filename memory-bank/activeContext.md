@@ -7,22 +7,33 @@
 ### Immediate Tasks
 
 ✅ **Complete:** Feature 5B-1 (Toolbar Architecture Refactor)
+✅ **Complete:** Feature 6 (Multi-Select) - Full implementation with 3-store refactor
 ⚠️ **Incorrect Implementation:** Feature 5B-2 (Flat Layers) - Will be replaced by Feature 7
-📋 **Next:** Feature 6 (Multi-Select) - PRD ready
-📋 **Then:** Feature 7 (Hierarchical Layers) - PRD ready
+📋 **Next:** Feature 7 (Hierarchical Layers) - PRD ready
 
 ### Important Note
 Feature 5B-2 was implemented with an **incorrect flat structure** (one object = one layer). This will be replaced by Feature 7 (Hierarchical Layers System) which implements proper layer grouping (layers contain multiple objects).
 
 ## Recent Changes
+- **Feature 6: Multi-Select Complete (2025-10-19)**
+  - ✅ Marquee selection (click+drag on empty canvas)
+  - ✅ Bulk operations: move, delete, duplicate, copy/paste
+  - ✅ Multi-select drag (all objects move together)
+  - ✅ Context menu integration (shows bulk action counts)
+  - ✅ Properties panel integration (shared properties for multiple objects)
+  - ✅ Full history/undo support for all bulk operations
+  - **Major Refactor:** Split objectsStore into 3 clean stores
+    - `selectionStore` - Selection state (LOCAL ONLY, never persisted)
+    - `uiPreferencesStore` - UI preferences (localStorage)
+    - `objectsStore` - Domain data only (objects, layer management)
+  - **Bug Fixes:** Pan tool, paste format, delete key, right-click selection
 - **Feature 5B-2: Incorrect Flat Layers Implementation (2025-10-19)**
   - ⚠️ Implemented with flat structure (one object = one layer) - INCORRECT
   - Will be replaced by Feature 7 (Hierarchical Layers System)
   - Reusable components created: LayerThumbnail, rename logic, ShadCN integration
 - **PRDs Created (2025-10-19)**
-  - Feature 6: Multi-Select (~245 lines) - Ready for implementation
+  - Feature 6: Multi-Select (~245 lines) - COMPLETE ✅
   - Feature 7: Hierarchical Layers System (~226 lines) - Ready for implementation
-  - Build order: Feature 6 first, then Feature 7
 - **Feature 5B-1: Toolbar Architecture Refactor Complete (2025-10-19)**
   - Left fixed toolbar (60px) with tool selection (V/R/C/H shortcuts)
   - Right pinnable sidebar (320px) with Properties + Layers sections (61/39 split)
@@ -36,13 +47,14 @@ Feature 5B-2 was implemented with an **incorrect flat structure** (one object = 
 - ✅ Features 1-5: Context Menu, Duplicate, Undo/Redo, Copy/Paste, Z-Index
 - ✅ Feature 5B-1: Toolbar Refactor (COMPLETE)
 - ⚠️ Feature 5B-2: Flat Layers (INCORRECT - will be replaced)
-- 📋 Feature 6: Multi-Select (PRD ready - implement next)
-- 📋 Feature 7: Hierarchical Layers (PRD ready - implement after Feature 6)
+- ✅ Feature 6: Multi-Select (COMPLETE)
+- 📋 Feature 7: Hierarchical Layers (PRD ready - implement next)
 
 ### Architectural Decisions
 See systemPatterns.md for all technical decisions. Key choices:
 - Clipboard: Shared utilities, not separate feature
-- Selection state: Lives in objectsStore (Feature 6)
+- **Selection state:** Separate selectionStore (LOCAL ONLY, never persisted)
+- **3-Store Pattern:** objectsStore (domain), selectionStore (interaction), uiPreferencesStore (UI)
 - Layers: Hierarchical groups containing objects (Feature 7, not flat)
 - PRDs: ~220-250 lines each (under cursor rules limit)
 
@@ -70,5 +82,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - AI Agent & Lookbooks: Deferred post-Phase 2
 
 ---
-*Last Updated: 2025-10-19 - PRDs ready for Feature 6 & 7; Feature 5B-2 incorrect flat implementation noted*
+*Last Updated: 2025-10-19 - Feature 6 complete with 3-store refactor; Feature 7 ready for implementation*
 

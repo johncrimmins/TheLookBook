@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useObjectsStore } from '../lib/objectsStore';
+import { useSelectionStore } from '../lib/selectionStore';
 import { useObjects } from '../hooks/useObjects';
 import { LayerItem } from './LayerItem';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
@@ -12,7 +13,8 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
  */
 export function LayerPanel() {
   const { objects, selectedObject } = useObjects();
-  const { selectObject, reorderLayer } = useObjectsStore();
+  const { selectObject } = useSelectionStore();
+  const { reorderLayer } = useObjectsStore();
 
   // Sort objects by order descending (front to back for layer panel)
   const sortedObjects = useMemo(() => {

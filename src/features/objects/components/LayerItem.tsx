@@ -7,8 +7,7 @@ import { LayerThumbnail } from './LayerThumbnail';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { useObjectsStore } from '../lib/objectsStore';
-import { generateLayerName } from '../lib/objectsStore';
+import { useObjectsStore, generateLayerName } from '../lib/objectsStore';
 
 interface LayerItemProps {
   object: CanvasObject;

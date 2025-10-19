@@ -7,7 +7,7 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Button } from '@/shared/components/ui/button';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
-import { useObjectsStore } from '../lib/objectsStore';
+import { useUIPreferencesStore } from '../lib/uiPreferencesStore';
 
 interface ContextMenuProps {
   canvasId: string;
@@ -19,8 +19,8 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
   const contextMenu = useCanvasStore((state) => state.contextMenu);
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const setPropertiesPanel = useCanvasStore((state) => state.setPropertiesPanel);
-  const setRightSidebarOpen = useObjectsStore((state) => state.setRightSidebarOpen);
-  const { objectsMap, deleteObject, bringToFront, sendToBack } = useObjects(canvasId);
+  const setRightSidebarOpen = useUIPreferencesStore((state) => state.setRightSidebarOpen);
+  const { objectsMap, deleteObject, bringToFront, sendToBack, selectedIds, bulkDelete, bulkDuplicate, bulkCopy } = useObjects(canvasId);
 
   // Close menu on ESC key
   const handleKeyDown = useCallback(
@@ -95,6 +95,26 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
     setContextMenu(null);
   };
 
+  // Bulk operation handlers
+  const handleBulkDelete = async () => {
+    await bulkDelete();
+    setContextMenu(null);
+  };
+
+  const handleBulkDuplicate = async () => {
+    await bulkDuplicate();
+    setContextMenu(null);
+  };
+
+  const handleBulkCopy = () => {
+    bulkCopy();
+    setContextMenu(null);
+  };
+
+  // Check if we're in multi-select mode (clicked object is part of selection)
+  const isMultiSelect = selectedIds.length > 1 && selectedIds.includes(contextMenu.objectId);
+  const selectionCount = selectedIds.length;
+
   return (
     <>
       {/* Backdrop to catch clicks outside */}
@@ -140,7 +160,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
           <Button
             variant="ghost"
             className="w-full justify-start h-8 px-2 text-sm font-normal"
-            onClick={handleCopy}
+            onClick={isMultiSelect ? handleBulkCopy : handleCopy}
           >
             <svg
               className="mr-2 h-4 w-4"
@@ -155,7 +175,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            Copy
+            {isMultiSelect ? `Copy (${selectionCount})` : 'Copy'}
             <span className="ml-auto text-xs text-gray-400">Ctrl+C</span>
           </Button>
 
@@ -163,7 +183,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
           <Button
             variant="ghost"
             className="w-full justify-start h-8 px-2 text-sm font-normal"
-            onClick={handleDuplicate}
+            onClick={isMultiSelect ? handleBulkDuplicate : handleDuplicate}
           >
             <svg
               className="mr-2 h-4 w-4"
@@ -178,7 +198,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            Duplicate
+            {isMultiSelect ? `Duplicate All (${selectionCount})` : 'Duplicate'}
             <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
           </Button>
 
@@ -188,7 +208,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
           <Button
             variant="ghost"
             className="w-full justify-start h-8 px-2 text-sm font-normal text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={handleDelete}
+            onClick={isMultiSelect ? handleBulkDelete : handleDelete}
           >
             <svg
               className="mr-2 h-4 w-4"
@@ -203,7 +223,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
-            Delete
+            {isMultiSelect ? `Delete All (${selectionCount})` : 'Delete'}
           </Button>
 
           <Separator />

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { ProtectedRoute, UserProfile, useAuthStore } from '@/features/auth';
 import { useCanvasStore, useLeftToolbar } from '@/features/canvas';
 import { OnlineUsers, usePresenceStore } from '@/features/presence';
-import { useObjects, broadcastShapePreview, subscribeToShapePreviews } from '@/features/objects';
+import { useObjects, useSelectionStore, broadcastShapePreview, subscribeToShapePreviews } from '@/features/objects';
 import type { ShapePreview as ShapePreviewType } from '@/features/objects/types';
 import { useHistory } from '@/features/history';
 import { Point } from '@/shared/types';
@@ -35,13 +35,15 @@ export default function CanvasPage() {
   
   // Use left toolbar hook for tool selection with keyboard shortcuts
   const { activeTool, setActiveTool } = useLeftToolbar();
-  const tool = activeTool as 'select' | 'rectangle' | 'circle'; // Map to existing tool type
+  const tool = activeTool; // Keep all tools including 'pan'
   const [deselectTrigger, setDeselectTrigger] = useState(0);
   const [cursorPosition, setCursorPosition] = useState<Point | null>(null);
   const [shapePreviews, setShapePreviews] = useState<Record<string, ShapePreviewType>>({});
-  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [pastePreview, setPastePreview] = useState<ShapePreviewType | null>(null);
   const [isPasteMode, setIsPasteMode] = useState(false);
+  
+  // Get selection state from store
+  const { selectedIds } = useSelectionStore();
   
   const { 
     objects, 
@@ -57,6 +59,9 @@ export default function CanvasPage() {
     finishObjectDrag,
     bringToFront,
     sendToBack,
+    bulkDelete,
+    bulkDuplicate,
+    bulkCopy,
   } = useObjects(canvasId);
   
   // Setup undo/redo with keyboard shortcuts (Ctrl+Z, Ctrl+Y)
@@ -102,6 +107,9 @@ export default function CanvasPage() {
   }, [canvasId, user]);
   
   // Throttled function to broadcast shape preview
+  // Track drag start positions for multi-select
+  const dragStartPositionsRef = useRef<Record<string, Point>>({});
+  
   const throttledBroadcastPreview = useRef(
     throttle(async (canvasId: string, preview: ShapePreviewType | null, userId: string) => {
       try {
@@ -119,16 +127,17 @@ export default function CanvasPage() {
     // Handle paste mode preview (local only, not broadcast)
     if (isPasteMode && cursorPosition) {
       const clipboardData = pasteFromClipboard();
-      if (clipboardData) {
+      if (clipboardData && clipboardData.objects && clipboardData.objects[0]) {
+        const firstObject = clipboardData.objects[0];
         const preview: ShapePreviewType = {
-          type: clipboardData.object.type as 'rectangle' | 'circle',
+          type: firstObject.type as 'rectangle' | 'circle',
           position: { 
-            x: cursorPosition.x - clipboardData.object.width / 2, 
-            y: cursorPosition.y - clipboardData.object.height / 2 
+            x: cursorPosition.x - firstObject.width / 2, 
+            y: cursorPosition.y - firstObject.height / 2 
           },
-          width: clipboardData.object.width,
-          height: clipboardData.object.height,
-          fill: clipboardData.object.fill,
+          width: firstObject.width,
+          height: firstObject.height,
+          fill: firstObject.fill,
           userId: user.id,
           userName: user.displayName || user.email || 'Anonymous',
         };
@@ -203,7 +212,7 @@ export default function CanvasPage() {
     
     // Get data from clipboard
     const clipboardData = pasteFromClipboard();
-    if (!clipboardData) {
+    if (!clipboardData || !clipboardData.objects || clipboardData.objects.length === 0) {
       setIsPasteMode(false);
       setPastePreview(null);
       return;
@@ -211,13 +220,14 @@ export default function CanvasPage() {
     
     try {
       // Create object from clipboard at clicked position
+      const firstObject = clipboardData.objects[0];
       const pasteParams = {
-        type: clipboardData.object.type,
-        x: position.x - clipboardData.object.width / 2, // Center on cursor
-        y: position.y - clipboardData.object.height / 2,
-        width: clipboardData.object.width,
-        height: clipboardData.object.height,
-        fill: clipboardData.object.fill,
+        type: firstObject.type,
+        x: position.x - firstObject.width / 2, // Center on cursor
+        y: position.y - firstObject.height / 2,
+        width: firstObject.width,
+        height: firstObject.height,
+        fill: firstObject.fill,
       };
       
       // Create the pasted object
@@ -225,7 +235,8 @@ export default function CanvasPage() {
       
       // Auto-select the pasted object
       if (newObject) {
-        setSelectedObjectId(newObject.id);
+        const { selectObject } = useSelectionStore.getState();
+        selectObject(newObject.id);
         console.log('Pasted object from clipboard');
       }
       
@@ -260,7 +271,8 @@ export default function CanvasPage() {
   }, []);
   
   const handleObjectSelect = useCallback((objectId: string | null) => {
-    setSelectedObjectId(objectId);
+    // This callback is kept for backwards compatibility but selection is now managed by store
+    // ObjectRenderer will call store methods directly
   }, []);
 
   const handleObjectContextMenu = useCallback((objectId: string, position: { x: number; y: number }) => {
@@ -272,65 +284,82 @@ export default function CanvasPage() {
   }, [setContextMenu]);
   
   const handleDeleteSelected = useCallback(async () => {
-    if (selectedObjectId && canvasId) {
+    if (selectedIds.length > 0 && canvasId) {
       try {
-        await deleteObject(selectedObjectId);
-        setSelectedObjectId(null);
+        await bulkDelete();
       } catch (error) {
-        console.error('Failed to delete object:', error);
+        console.error('Failed to delete selected objects:', error);
       }
     }
-  }, [selectedObjectId, canvasId, deleteObject]);
+  }, [selectedIds, canvasId, bulkDelete]);
   
   const handleDuplicateObject = useCallback(async (objectId?: string) => {
-    // Use provided objectId or fall back to selectedObjectId
-    const targetObjectId = objectId || selectedObjectId;
+    if (!canvasId) return;
     
-    if (!targetObjectId || !canvasId) return;
-    
-    // Find the object to duplicate
-    const originalObject = objects.find(obj => obj.id === targetObjectId);
-    if (!originalObject) return;
-    
-    try {
-      // Create duplicate with offset position (+20px X, +20px Y)
-      const duplicateParams = {
-        type: originalObject.type,
-        x: originalObject.position.x + 20,
-        y: originalObject.position.y + 20,
-        width: originalObject.width,
-        height: originalObject.height,
-        fill: originalObject.fill,
-      };
-      
-      // Create the duplicate object
-      const newObject = await createObject(duplicateParams);
-      
-      // Auto-select the duplicate
-      if (newObject) {
-        setSelectedObjectId(newObject.id);
+    // If no specific objectId provided, use bulk duplicate for selected objects
+    if (!objectId && selectedIds.length > 0) {
+      try {
+        await bulkDuplicate();
+      } catch (error) {
+        console.error('Failed to duplicate selected objects:', error);
       }
-    } catch (error) {
-      console.error('Failed to duplicate object:', error);
+      return;
     }
-  }, [selectedObjectId, canvasId, objects, createObject]);
+    
+    // Single object duplicate (from context menu with specific ID)
+    if (objectId) {
+      const originalObject = objects.find(obj => obj.id === objectId);
+      if (!originalObject) return;
+      
+      try {
+        // Create duplicate with offset position (+20px X, +20px Y)
+        const duplicateParams = {
+          type: originalObject.type,
+          x: originalObject.position.x + 20,
+          y: originalObject.position.y + 20,
+          width: originalObject.width,
+          height: originalObject.height,
+          fill: originalObject.fill,
+        };
+        
+        // Create the duplicate object
+        const newObject = await createObject(duplicateParams);
+        
+        // Auto-select the duplicate
+        if (newObject) {
+          const { selectObject } = useSelectionStore.getState();
+          selectObject(newObject.id);
+        }
+      } catch (error) {
+        console.error('Failed to duplicate object:', error);
+      }
+    }
+  }, [canvasId, selectedIds, objects, createObject, bulkDuplicate]);
   
   const handleCopyObject = useCallback((objectId?: string) => {
-    // Use provided objectId or fall back to selectedObjectId
-    const targetObjectId = objectId || selectedObjectId;
+    if (!canvasId) return;
     
-    if (!targetObjectId || !canvasId) return;
-    
-    // Find the object to copy
-    const objectToCopy = objects.find(obj => obj.id === targetObjectId);
-    if (!objectToCopy) return;
-    
-    // Copy to clipboard (localStorage)
-    const success = copyToClipboard(objectToCopy, canvasId);
-    if (success) {
-      console.log('Copied object to clipboard');
+    // If no specific objectId provided, use bulk copy for selected objects
+    if (!objectId && selectedIds.length > 0) {
+      const success = bulkCopy();
+      if (success) {
+        console.log(`Copied ${selectedIds.length} object(s) to clipboard`);
+      }
+      return;
     }
-  }, [selectedObjectId, canvasId, objects]);
+    
+    // Single object copy (from context menu with specific ID)
+    if (objectId) {
+      const objectToCopy = objects.find(obj => obj.id === objectId);
+      if (!objectToCopy) return;
+      
+      // Copy to clipboard (localStorage)
+      const success = copyToClipboard(objectToCopy, canvasId);
+      if (success) {
+        console.log('Copied object to clipboard');
+      }
+    }
+  }, [canvasId, selectedIds, objects, bulkCopy]);
   
   const handlePasteObject = useCallback(() => {
     if (!canvasId || !user) return;
@@ -361,19 +390,19 @@ export default function CanvasPage() {
       }
       
       // Delete key only (not Backspace)
-      if (e.key === 'Delete' && selectedObjectId) {
+      if (e.key === 'Delete' && selectedIds.length > 0) {
         e.preventDefault();
         handleDeleteSelected();
       }
       
       // Duplicate with Ctrl+D or Cmd+D (Mac)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedObjectId) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedIds.length > 0) {
         e.preventDefault(); // Prevent browser bookmark dialog
         handleDuplicateObject();
       }
       
       // Copy with Ctrl+C or Cmd+C (Mac)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedObjectId) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && selectedIds.length > 0) {
         e.preventDefault(); // Prevent default browser copy
         handleCopyObject();
       }
@@ -384,28 +413,28 @@ export default function CanvasPage() {
         handlePasteObject();
       }
       
-      // Z-Index shortcuts (only when object is selected)
-      if (selectedObjectId) {
+      // Z-Index shortcuts (only when single object is selected)
+      if (selectedIds.length === 1) {
         const ctrl = e.ctrlKey || e.metaKey;
         const shift = e.shiftKey;
         
         // Bring to Front: Ctrl+Shift+]
         if (ctrl && shift && e.key === ']') {
           e.preventDefault();
-          bringToFront(selectedObjectId);
+          bringToFront(selectedIds[0]);
         }
         
         // Send to Back: Ctrl+Shift+[
         if (ctrl && shift && e.key === '[') {
           e.preventDefault();
-          sendToBack(selectedObjectId);
+          sendToBack(selectedIds[0]);
         }
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedObjectId, isPasteMode, handleDeleteSelected, handleDuplicateObject, handleCopyObject, handlePasteObject, bringToFront, sendToBack]);
+  }, [selectedIds, isPasteMode, handleDeleteSelected, handleDuplicateObject, handleCopyObject, handlePasteObject, bringToFront, sendToBack]);
   
   if (!canvasId) {
     return (
@@ -456,13 +485,74 @@ export default function CanvasPage() {
                   updateObject(objectId, updates);
                 }}
                 onObjectDragStart={(objectId) => {
-                  startObjectDrag(objectId);
+                  // Track start positions for multi-select drag
+                  if (selectedIds.includes(objectId) && selectedIds.length > 1) {
+                    // Store start positions of ALL selected objects
+                    dragStartPositionsRef.current = {};
+                    selectedIds.forEach(id => {
+                      const obj = objects.find(o => o.id === id);
+                      if (obj) {
+                        dragStartPositionsRef.current[id] = { ...obj.position };
+                      }
+                    });
+                  } else {
+                    // Single object drag
+                    startObjectDrag(objectId);
+                  }
                 }}
                 onObjectDragMove={(objectId, position) => {
-                  broadcastObjectMove(objectId, position);
+                  // Check if this is a multi-select drag
+                  if (selectedIds.includes(objectId) && selectedIds.length > 1 && dragStartPositionsRef.current[objectId]) {
+                    // Calculate delta from start position
+                    const startPos = dragStartPositionsRef.current[objectId];
+                    const deltaX = position.x - startPos.x;
+                    const deltaY = position.y - startPos.y;
+                    
+                    // Move all selected objects by the same delta
+                    selectedIds.forEach(id => {
+                      const startObjPos = dragStartPositionsRef.current[id];
+                      if (startObjPos) {
+                        const newPos = {
+                          x: startObjPos.x + deltaX,
+                          y: startObjPos.y + deltaY,
+                        };
+                        broadcastObjectMove(id, newPos);
+                      }
+                    });
+                  } else {
+                    // Single object drag
+                    broadcastObjectMove(objectId, position);
+                  }
                 }}
-                onObjectDragEnd={(objectId, position) => {
-                  finishObjectDrag(objectId, position);
+                onObjectDragEnd={async (objectId, position) => {
+                  // Check if this was a multi-select drag
+                  if (selectedIds.includes(objectId) && selectedIds.length > 1 && dragStartPositionsRef.current[objectId]) {
+                    // Calculate final delta
+                    const startPos = dragStartPositionsRef.current[objectId];
+                    const deltaX = position.x - startPos.x;
+                    const deltaY = position.y - startPos.y;
+                    
+                    // Persist all moved objects
+                    await Promise.all(
+                      selectedIds.map(id => {
+                        const startObjPos = dragStartPositionsRef.current[id];
+                        if (startObjPos) {
+                          const finalPos = {
+                            x: startObjPos.x + deltaX,
+                            y: startObjPos.y + deltaY,
+                          };
+                          return finishObjectDrag(id, finalPos);
+                        }
+                        return Promise.resolve();
+                      })
+                    );
+                    
+                    // Clear tracking
+                    dragStartPositionsRef.current = {};
+                  } else {
+                    // Single object drag
+                    finishObjectDrag(objectId, position);
+                  }
                 }}
                 onObjectTransformStart={(objectId) => {
                   broadcastObjectTransformStart(objectId);

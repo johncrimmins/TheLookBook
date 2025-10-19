@@ -4,7 +4,7 @@
 import { useEffect, useRef } from 'react';
 import { Pin, PinOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
-import { useObjectsStore } from '../lib/objectsStore';
+import { useUIPreferencesStore } from '../lib/uiPreferencesStore';
 import { SidebarPanel } from './SidebarPanel';
 import { LayerPanel } from './LayerPanel';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
@@ -19,11 +19,77 @@ interface RightSidebarProps {
 
 /**
  * Properties content component - shows properties or placeholder
+ * Supports both single and multi-select
  */
 function PropertiesContent({ canvasId }: { canvasId: string }) {
   const propertiesPanel = useCanvasStore((state) => state.propertiesPanel);
-  const { objectsMap, updateObject } = useObjects(canvasId);
+  const { objectsMap, updateObject, bulkUpdateProperty, selectedIds } = useObjects(canvasId);
 
+  // Check for multi-select first (takes precedence)
+  const isMultiSelect = selectedIds.length > 1;
+
+  // Multi-select mode
+  if (isMultiSelect) {
+    const selectedObjects = selectedIds.map(id => objectsMap[id]).filter(Boolean);
+    
+    if (selectedObjects.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-8 text-center text-gray-500">
+          <p className="text-sm">No objects selected</p>
+        </div>
+      );
+    }
+
+    // For multi-select, use first object's values as defaults
+    const firstObject = selectedObjects[0];
+
+    const handleBulkPropertyChange = (property: string, value: number | string) => {
+      bulkUpdateProperty(property, value);
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Multi-select header */}
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+            <span className="text-sm font-semibold text-blue-600">{selectedObjects.length}</span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900">
+              {selectedObjects.length} objects selected
+            </p>
+            <p className="text-xs text-gray-500">Editing shared properties</p>
+          </div>
+        </div>
+
+        {/* Shared Properties - Only show properties that apply to all selected objects */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-gray-700">Shared Properties</h3>
+          
+          <ColorPicker
+            label="Fill Color"
+            value={firstObject.fill}
+            onChange={(value) => handleBulkPropertyChange('fill', value)}
+          />
+          
+          <PropertyInput
+            label="Opacity"
+            value={Math.round(firstObject.opacity * 100)}
+            onChange={(value) => handleBulkPropertyChange('opacity', value / 100)}
+            min={0}
+            max={100}
+            suffix="%"
+          />
+        </div>
+
+        <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
+          <p>💡 Tip: Changes apply to all {selectedObjects.length} selected objects</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Single select mode
   // Show placeholder if no object selected
   if (!propertiesPanel || !propertiesPanel.objectId) {
     return (
@@ -132,16 +198,16 @@ function PropertiesContent({ canvasId }: { canvasId: string }) {
 export function RightSidebar({ canvasId }: RightSidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   
-  const isOpen = useObjectsStore((state) => state.isRightSidebarOpen);
-  const isPinned = useObjectsStore((state) => state.isRightSidebarPinned);
-  const isPropertiesExpanded = useObjectsStore((state) => state.isPropertiesPanelExpanded);
-  const isLayersExpanded = useObjectsStore((state) => state.isLayersPanelExpanded);
+  const isOpen = useUIPreferencesStore((state) => state.isRightSidebarOpen);
+  const isPinned = useUIPreferencesStore((state) => state.isRightSidebarPinned);
+  const isPropertiesExpanded = useUIPreferencesStore((state) => state.isPropertiesPanelExpanded);
+  const isLayersExpanded = useUIPreferencesStore((state) => state.isLayersPanelExpanded);
   
-  const toggleSidebar = useObjectsStore((state) => state.toggleRightSidebar);
-  const togglePin = useObjectsStore((state) => state.toggleRightSidebarPin);
-  const toggleProperties = useObjectsStore((state) => state.togglePropertiesPanel);
-  const toggleLayers = useObjectsStore((state) => state.toggleLayersPanel);
-  const setOpen = useObjectsStore((state) => state.setRightSidebarOpen);
+  const toggleSidebar = useUIPreferencesStore((state) => state.toggleRightSidebar);
+  const togglePin = useUIPreferencesStore((state) => state.toggleRightSidebarPin);
+  const toggleProperties = useUIPreferencesStore((state) => state.togglePropertiesPanel);
+  const toggleLayers = useUIPreferencesStore((state) => state.toggleLayersPanel);
+  const setOpen = useUIPreferencesStore((state) => state.setRightSidebarOpen);
 
   // Handle outside click when unpinned
   useEffect(() => {

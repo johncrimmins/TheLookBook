@@ -60,3 +60,20 @@ export interface ShapePreview {
   userId: string;
   userName?: string;
 }
+
+/**
+ * Selection state for multi-select feature
+ */
+export interface SelectionState {
+  selectedIds: string[];
+}
+
+/**
+ * Bounding box for intersection calculations
+ */
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
