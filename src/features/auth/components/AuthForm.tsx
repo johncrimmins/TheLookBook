@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp, signInWithGoogle } from '../services/authService';
 import { AuthFormData, AuthMode } from '../types';
 import { Button } from '@/shared/components/ui/button';
+import { LoadingButton } from '@/shared/components/LoadingButton';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import {
@@ -187,13 +188,14 @@ export function AuthForm({ mode: initialMode = 'signin', onSuccess }: AuthFormPr
             </div>
           )}
           
-          <Button
+          <LoadingButton
             type="submit"
-            disabled={isLoading}
+            loading={isLoading}
+            loadingText="Loading..."
             className="w-full"
           >
-            {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
-          </Button>
+            {isSignUp ? 'Sign Up' : 'Sign In'}
+          </LoadingButton>
         </form>
       </CardContent>
       

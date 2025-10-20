@@ -10,7 +10,7 @@ import { Point } from '@/shared/types';
 import { debounce, throttle } from '@/shared/lib/utils';
 import { useHistoryStore } from '@/features/history';
 import { doc, setDoc } from 'firebase/firestore';
-import { getFirestore } from '../lib/firebase';
+import { getFirestore } from '@/shared/services/firebase';
 import { copyToClipboard, pasteFromClipboard } from '@/shared/lib/clipboard';
 import {
   createObject as createObjectService,
@@ -296,7 +296,7 @@ export function useObjects(canvasId: string | null) {
       try {
         // If this is a redo/restore, we already have the full object
         // Just need to persist it
-        const db = (await import('../lib/firebase')).getFirestore();
+        const db = (await import('@/shared/services/firebase')).getDb();
         const { doc, setDoc } = await import('firebase/firestore');
         const objectRef = doc(db, 'canvases', canvasId, 'objects', object.id);
         await setDoc(objectRef, object);

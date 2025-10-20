@@ -4,15 +4,18 @@ import { useLookbooksStore } from '../lib/lookbooksStore';
 
 /**
  * Hook to subscribe to collaborators for a canvas
+ * Fix #2: Canvas-specific state to prevent global pollution
  */
 export function useCollaborators(canvasId: string | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { collaborators, setCollaborators } = useLookbooksStore();
+  const { collaboratorsByCanvas, setCollaborators } = useLookbooksStore();
+  
+  // Get collaborators for this specific canvas
+  const collaborators = canvasId ? (collaboratorsByCanvas[canvasId] ?? []) : [];
 
   useEffect(() => {
     if (!canvasId) {
-      setCollaborators([]);
       return;
     }
 
@@ -22,14 +25,17 @@ export function useCollaborators(canvasId: string | null) {
     const unsubscribe = subscribeToCollaborators(
       canvasId,
       (newCollaborators) => {
-        setCollaborators(newCollaborators);
+        setCollaborators(canvasId, newCollaborators);
         setLoading(false);
       }
     );
 
     return () => {
       unsubscribe();
-      setCollaborators([]);
+      // Clear only this canvas's collaborators on cleanup
+      if (canvasId) {
+        setCollaborators(canvasId, []);
+      }
     };
   }, [canvasId, setCollaborators]);
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { Avatar } from '@/shared/components/ui/avatar';
+import { useMemo } from 'react';
+import { UserAvatar } from '@/shared/components/UserAvatar';
 import { Badge } from '@/shared/components/ui/badge';
 import {
   Tooltip,
@@ -24,14 +25,20 @@ export function PresenceBadges({
   activeUserIds = [],
   maxVisible = 5,
 }: PresenceBadgesProps) {
-  // Sort: Owner first, then alphabetical
-  const sortedCollaborators = [...collaborators].sort((a, b) => {
-    if (a.role === 'owner' && b.role !== 'owner') return -1;
-    if (b.role === 'owner' && a.role !== 'owner') return 1;
-    return (a.displayName || a.email).localeCompare(b.displayName || b.email);
-  });
+  // Sort: Owner first, then alphabetical (memoized to prevent re-sorting on every render)
+  const sortedCollaborators = useMemo(() => {
+    return [...collaborators].sort((a, b) => {
+      if (a.role === 'owner' && b.role !== 'owner') return -1;
+      if (b.role === 'owner' && a.role !== 'owner') return 1;
+      return (a.displayName || a.email).localeCompare(b.displayName || b.email);
+    });
+  }, [collaborators]);
 
-  const visibleCollaborators = sortedCollaborators.slice(0, maxVisible);
+  const visibleCollaborators = useMemo(
+    () => sortedCollaborators.slice(0, maxVisible),
+    [sortedCollaborators, maxVisible]
+  );
+  
   const remainingCount = Math.max(0, sortedCollaborators.length - maxVisible);
 
   return (
@@ -44,19 +51,13 @@ export function PresenceBadges({
             <Tooltip key={collaborator.userId}>
               <TooltipTrigger asChild>
                 <div className="relative">
-                  <Avatar className="h-8 w-8 border-2 border-background cursor-pointer hover:scale-110 transition-transform">
-                    {collaborator.photoURL ? (
-                      <img
-                        src={collaborator.photoURL}
-                        alt={collaborator.displayName || collaborator.email}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-primary/10 text-primary text-xs font-medium">
-                        {(collaborator.displayName || collaborator.email).charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </Avatar>
+                  <UserAvatar
+                    photoURL={collaborator.photoURL}
+                    displayName={collaborator.displayName}
+                    email={collaborator.email}
+                    size="md"
+                    className="border-2 border-background cursor-pointer hover:scale-110 transition-transform"
+                  />
                   {isActive && (
                     <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background" />
                   )}

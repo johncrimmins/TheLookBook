@@ -8,8 +8,8 @@ interface LookbooksState {
   loading: boolean;
   error: string | null;
   
-  // Feature 9: Collaboration state
-  collaborators: Collaborator[];
+  // Feature 9: Collaboration state (canvas-keyed to prevent global pollution - Fix #2)
+  collaboratorsByCanvas: Record<string, Collaborator[]>;
   currentUserRole: Role | null;
 
   // Actions
@@ -21,10 +21,10 @@ interface LookbooksState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   
-  // Feature 9: Collaboration actions
-  setCollaborators: (collaborators: Collaborator[]) => void;
-  addCollaboratorToState: (collaborator: Collaborator) => void;
-  removeCollaboratorFromState: (userId: string) => void;
+  // Feature 9: Collaboration actions (canvas-specific - Fix #2)
+  setCollaborators: (canvasId: string, collaborators: Collaborator[]) => void;
+  addCollaboratorToState: (canvasId: string, collaborator: Collaborator) => void;
+  removeCollaboratorFromState: (canvasId: string, userId: string) => void;
   setCurrentUserRole: (role: Role | null) => void;
 }
 
@@ -34,7 +34,7 @@ export const useLookbooksStore = create<LookbooksState>((set) => ({
   currentLookbook: null,
   loading: false,
   error: null,
-  collaborators: [],
+  collaboratorsByCanvas: {},
   currentUserRole: null,
 
   // Actions
@@ -67,17 +67,31 @@ export const useLookbooksStore = create<LookbooksState>((set) => ({
   
   setError: (error) => set({ error }),
   
-  // Feature 9: Collaboration actions
-  setCollaborators: (collaborators) => set({ collaborators }),
-  
-  addCollaboratorToState: (collaborator) =>
+  // Feature 9: Collaboration actions (canvas-specific to prevent state pollution - Fix #2)
+  setCollaborators: (canvasId, collaborators) =>
     set((state) => ({
-      collaborators: [...state.collaborators, collaborator],
+      collaboratorsByCanvas: {
+        ...state.collaboratorsByCanvas,
+        [canvasId]: collaborators,
+      },
     })),
   
-  removeCollaboratorFromState: (userId) =>
+  addCollaboratorToState: (canvasId, collaborator) =>
     set((state) => ({
-      collaborators: state.collaborators.filter((c) => c.userId !== userId),
+      collaboratorsByCanvas: {
+        ...state.collaboratorsByCanvas,
+        [canvasId]: [...(state.collaboratorsByCanvas[canvasId] || []), collaborator],
+      },
+    })),
+  
+  removeCollaboratorFromState: (canvasId, userId) =>
+    set((state) => ({
+      collaboratorsByCanvas: {
+        ...state.collaboratorsByCanvas,
+        [canvasId]: (state.collaboratorsByCanvas[canvasId] || []).filter(
+          (c) => c.userId !== userId
+        ),
+      },
     })),
   
   setCurrentUserRole: (role) => set({ currentUserRole: role }),

@@ -53,6 +53,7 @@ export function useLookbooks() {
 
 /**
  * Hook to subscribe to user's Lookbooks split by role (Feature 9)
+ * Fix #4: React state instead of closures to prevent stale state
  */
 export function useLookbooksByRole() {
   const { user } = useAuth();
@@ -60,6 +61,12 @@ export function useLookbooksByRole() {
   const [sharedLookbooks, setSharedLookbooks] = useState<Lookbook[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Fix #4: React state for tracking responses (prevents stale closures)
+  const [loadingState, setLoadingState] = useState({
+    ownedReceived: false,
+    sharedReceived: false,
+  });
 
   useEffect(() => {
     if (!user) {
@@ -69,8 +76,10 @@ export function useLookbooksByRole() {
       return;
     }
 
+    console.log('[useLookbooksByRole] Setting up subscriptions for user:', user.id);
     setLoading(true);
     setError(null);
+    setLoadingState({ ownedReceived: false, sharedReceived: false }); // Reset on user change
 
     try {
       // Subscribe to owned lookbooks
@@ -79,10 +88,22 @@ export function useLookbooksByRole() {
         'owner',
         (lookbooks) => {
           setOwnedLookbooks(lookbooks);
+          setLoadingState((prev) => ({ ...prev, ownedReceived: true }));
         },
         (err) => {
-          console.error('Failed to load owned Lookbooks:', err);
-          setError(err.message);
+          console.error('[useLookbooksByRole] Failed to load owned lookbooks:', {
+            userId: user.id,
+            error: err.message,
+            errorCode: (err as any).code,
+            isPermissionError: err.message.includes('permission')
+          });
+          
+          setOwnedLookbooks([]);
+          setLoadingState((prev) => ({ ...prev, ownedReceived: true }));
+          
+          if (!err.message.includes('permission') && !err.message.includes('insufficient')) {
+            setError(err.message);
+          }
         }
       );
 
@@ -92,14 +113,24 @@ export function useLookbooksByRole() {
         'designer',
         (lookbooks) => {
           setSharedLookbooks(lookbooks);
+          setLoadingState((prev) => ({ ...prev, sharedReceived: true }));
         },
         (err) => {
-          console.error('Failed to load shared Lookbooks:', err);
-          setError(err.message);
+          console.error('[useLookbooksByRole] Failed to load shared lookbooks:', {
+            userId: user.id,
+            error: err.message,
+            errorCode: (err as any).code,
+            isPermissionError: err.message.includes('permission')
+          });
+          
+          setSharedLookbooks([]);
+          setLoadingState((prev) => ({ ...prev, sharedReceived: true }));
+          
+          if (!err.message.includes('permission') && !err.message.includes('insufficient')) {
+            setError(err.message);
+          }
         }
       );
-
-      setLoading(false);
 
       return () => {
         unsubscribeOwned();
@@ -111,6 +142,13 @@ export function useLookbooksByRole() {
       setLoading(false);
     }
   }, [user]);
+
+  // Fix #4: Separate effect to check loading complete (avoids stale closure state)
+  useEffect(() => {
+    if (loadingState.ownedReceived && loadingState.sharedReceived) {
+      setLoading(false);
+    }
+  }, [loadingState]);
 
   return {
     ownedLookbooks,

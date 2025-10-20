@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth } from '@/shared/services/firebase';
 import { useAuthStore } from '../lib/authStore';
 import { User } from '../types';
 import { syncUserProfile } from '../services/authService';

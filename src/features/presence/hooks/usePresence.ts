@@ -92,7 +92,8 @@ export function usePresence(canvasId: string | null) {
       isSubscribed = false;
       cleanup.then((fn) => fn?.());
     };
-  }, [canvasId, user, setCursors, setPresence]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasId, user?.id]); // Only depend on canvasId and user.id, not Zustand setters
   
   // Broadcast cursor position
   const broadcastCursor = useCallback(

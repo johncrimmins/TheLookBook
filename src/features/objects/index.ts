@@ -2,7 +2,7 @@
 export { useObjectsStore, generateObjectName } from './lib/objectsStore';
 export { useSelectionStore } from './lib/selectionStore';
 export { useUIPreferencesStore } from './lib/uiPreferencesStore';
-export { db, rtdb, getFirestore, getRTDB } from './lib/firebase';
+export { firestore as db, rtdb, getFirestore, getRTDB } from '@/shared/services/firebase';
 export { Rectangle } from './components/Rectangle';
 export { Circle } from './components/Circle';
 export { ObjectRenderer } from './components/ObjectRenderer';

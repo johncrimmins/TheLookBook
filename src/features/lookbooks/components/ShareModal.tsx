@@ -13,28 +13,29 @@ import { UserSearch } from './UserSearch';
 import { CollaboratorList } from './CollaboratorList';
 import { TransferOwnershipDialog } from './TransferOwnershipDialog';
 import { useUserSearch } from '../hooks/useUserSearch';
-import { useCollaborators } from '../hooks/useCollaborators';
 import { addCollaborator, removeCollaborator } from '../services/collaboratorService';
-import { UserProfile } from '../types';
+import { UserProfile, Collaborator } from '../types';
 
 interface ShareModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   canvasId: string;
   canvasName: string;
+  collaborators: Collaborator[];
 }
 
 /**
  * Share modal for managing collaborators
+ * Note: Receives collaborators as prop to avoid duplicate Firestore subscription
  */
 export function ShareModal({
   open,
   onOpenChange,
   canvasId,
   canvasName,
+  collaborators,
 }: ShareModalProps) {
   const { user } = useAuth();
-  const { collaborators, loading: collaboratorsLoading } = useCollaborators(canvasId);
   const [isAdding, setIsAdding] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
 
@@ -110,7 +111,7 @@ export function ShareModal({
             )}
 
             {/* Collaborator list */}
-            {!collaboratorsLoading && collaborators.length > 0 && (
+            {collaborators.length > 0 && (
               <CollaboratorList
                 collaborators={collaborators}
                 currentUserId={user.id}

@@ -10,7 +10,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { ref, set, onValue, remove } from 'firebase/database';
-import { getFirestore, getRTDB } from '../lib/firebase';
+import { getFirestore, getRTDB } from '@/shared/services/firebase';
 import { CanvasObject, ObjectUpdate, ShapePreview, Layer, DEFAULT_LAYER_ID, DEFAULT_LAYER_NAME } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -256,14 +256,26 @@ export async function broadcastShapePreview(
   preview: ShapePreview | null,
   userId: string
 ): Promise<void> {
-  const rtdb = getRTDB();
-  const previewRef = ref(rtdb, `shapePreviews/${canvasId}/${userId}`);
-  
-  if (preview) {
-    await set(previewRef, preview);
-  } else {
-    // Clear preview - userId is required to know which preview to remove
-    await remove(previewRef);
+  try {
+    const rtdb = getRTDB();
+    const previewRef = ref(rtdb, `shapePreviews/${canvasId}/${userId}`);
+    
+    if (preview) {
+      await set(previewRef, preview);
+      console.log('[ShapePreview] Preview broadcast:', { canvasId, userId, type: preview.type });
+    } else {
+      // Clear preview - userId is required to know which preview to remove
+      await remove(previewRef);
+      console.log('[ShapePreview] Preview cleared:', { canvasId, userId });
+    }
+  } catch (error) {
+    console.error('[ShapePreview] Failed to broadcast preview:', {
+      canvasId,
+      userId,
+      error,
+      message: error instanceof Error ? error.message : String(error)
+    });
+    // Don't throw - preview is non-critical functionality
   }
 }
 
@@ -277,10 +289,25 @@ export function subscribeToShapePreviews(
   const rtdb = getRTDB();
   const previewsRef = ref(rtdb, `shapePreviews/${canvasId}`);
   
-  const unsubscribe = onValue(previewsRef, (snapshot) => {
-    const previews = snapshot.val() || {};
-    callback(previews);
-  });
+  console.log('[ShapePreview] Subscribing to previews:', { canvasId });
+  
+  const unsubscribe = onValue(
+    previewsRef, 
+    (snapshot) => {
+      const previews = snapshot.val() || {};
+      const previewCount = Object.keys(previews).length;
+      console.log('[ShapePreview] Previews updated:', { canvasId, count: previewCount, userIds: Object.keys(previews) });
+      callback(previews);
+    },
+    (error) => {
+      console.error('[ShapePreview] Subscription error:', {
+        canvasId,
+        error,
+        message: error.message,
+        code: (error as any).code
+      });
+    }
+  );
   
   return unsubscribe;
 }

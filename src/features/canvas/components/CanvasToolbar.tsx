@@ -1,8 +1,9 @@
 // Canvas toolbar component - navigation, Lookbook name, and user info
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronLeft, Pencil } from 'lucide-react';
 import { UserProfile, useAuthStore } from '@/features/auth';
 import { usePresenceStore } from '@/features/presence';
 import {
@@ -102,8 +103,8 @@ export function CanvasToolbar({ canvasId }: CanvasToolbarProps) {
     }
   };
 
-  // Get active user IDs for presence badges
-  const activeUserIds = Object.keys(presence);
+  // Get active user IDs for presence badges (memoized to prevent infinite re-renders)
+  const activeUserIds = useMemo(() => Object.keys(presence), [presence]);
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40">
@@ -115,19 +116,7 @@ export function CanvasToolbar({ canvasId }: CanvasToolbarProps) {
           onClick={() => router.push('/mylookbooks')}
           className="flex items-center gap-2"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ChevronLeft className="h-4 w-4" />
           My Lookbooks
         </Button>
       </div>
@@ -153,19 +142,7 @@ export function CanvasToolbar({ canvasId }: CanvasToolbarProps) {
             <span className="text-lg font-semibold text-gray-900">
               {currentLookbook?.name || 'Untitled'}
             </span>
-            <svg
-              className="w-4 h-4 text-gray-400 group-hover:text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
+            <Pencil className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
           </button>
         )}
       </div>
@@ -217,6 +194,7 @@ export function CanvasToolbar({ canvasId }: CanvasToolbarProps) {
           onOpenChange={setShowShareModal}
           canvasId={canvasId}
           canvasName={currentLookbook.name}
+          collaborators={collaborators}
         />
       )}
       

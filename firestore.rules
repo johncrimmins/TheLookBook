@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // ✅ PRODUCTION RULES - CollabCanvas v3
-    // Last Updated: 2025-10-19 (Feature 9: Collaboration)
+    // Last Updated: 2025-10-19 (Feature 9: Collaboration - Fixed for batch writes)
     
     function isAuthenticated() {
       return request.auth != null;
@@ -45,10 +45,14 @@ service cloud.firestore {
       match /collaborators/{userId} {
         // Allow creating your own collaborator entry (for initial owner)
         allow create: if isAuthenticated() && request.auth.uid == userId;
-        // Read if you're a collaborator
+        
+        // FIXED: Allow reading ALL collaborators if you are a collaborator
+        // This is needed for useCollaborators subscription and presence badges
         allow read: if isAuthenticated() && isCollaborator(canvasId);
-        // Only owners can modify collaborators
-        allow update, delete: if isAuthenticated() && isCanvasOwner(canvasId);
+        
+        // For update/delete, check if requester has 'owner' role in their own entry
+        allow update, delete: if isAuthenticated() && 
+          get(/databases/$(database)/documents/canvases/$(canvasId)/collaborators/$(request.auth.uid)).data.role == 'owner';
       }
     }
     

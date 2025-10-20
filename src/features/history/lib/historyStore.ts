@@ -15,7 +15,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   recordAction: (actionData) => {
     const action: HistoryAction = {
       ...actionData,
-      id: crypto.randomUUID(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       timestamp: Date.now(),
     };
 

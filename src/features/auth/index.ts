@@ -1,6 +1,6 @@
 // Auth feature exports
 export { useAuthStore } from './lib/authStore';
-export { auth, getAuth } from './lib/firebase';
+export { auth, getAuth } from '@/shared/services/firebase';
 export { AuthForm } from './components/AuthForm';
 export { AuthProvider } from './components/AuthProvider';
 export { ProtectedRoute } from './components/ProtectedRoute';

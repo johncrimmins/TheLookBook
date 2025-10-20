@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from '@/shared/components/ui';
 import { Button } from '@/shared/components/ui/button';
-import { Avatar } from '@/shared/components/ui/avatar';
+import { UserAvatar } from '@/shared/components/UserAvatar';
 import { transferOwnership } from '../services/collaboratorService';
 import { Collaborator } from '../types';
 
@@ -83,15 +83,12 @@ export function TransferOwnershipDialog({
                       selectedUserId === designer.userId ? 'bg-accent' : ''
                     }`}
                   >
-                    <Avatar className="h-8 w-8">
-                      {designer.photoURL ? (
-                        <img src={designer.photoURL} alt={designer.displayName || designer.email} />
-                      ) : (
-                        <div className="flex items-center justify-center h-full w-full bg-primary/10 text-primary text-xs font-medium">
-                          {(designer.displayName || designer.email).charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </Avatar>
+                    <UserAvatar
+                      photoURL={designer.photoURL}
+                      displayName={designer.displayName}
+                      email={designer.email}
+                      size="md"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">
                         {designer.displayName || designer.email}

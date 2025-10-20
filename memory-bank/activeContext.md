@@ -1,13 +1,17 @@
 # Active Context: CollabCanvas v3
 
 ## Current Focus
-**Phase:** Phase 2 (AI Agent) - PRD 1 Implementation Starting
-**Date:** 2025-10-19
+**Phase:** Ready for AI Agent Implementation
+**Date:** 2025-10-20
 
 ### Immediate Tasks
 
-✅ **Complete:** All Phase 1 & Phase 3 features (Lookbooks + Canvas improvements)
-✅ **Complete:** AI Agent PRDs created (PRD 1: Basic Foundation, PRD 2: Complex Commands)
+✅ **Complete:** All ShareLookbooks Bug Fixes (Fixes #1-4)
+  - Fix #1: Eliminated duplicate Firestore subscription ✅
+  - Fix #2: Canvas-keyed collaborators state (no global pollution) ✅
+  - Fix #3: Async fetch outside onSnapshot (no infinite loops) ✅
+  - Fix #4: React state for loading (no stale closures) ✅
+  - See `docs/sharelookbooks-fix-guide.md` for details
 📋 **Next:** Implement PRD 1 - AI Agent Basic Foundation
   - Install LangChain + OpenAI dependencies
   - Build API route with Firebase auth
@@ -20,6 +24,27 @@
 Feature 7 (Hierarchical Layers System) has replaced Feature 5B-2's incorrect flat structure. Layers now properly group multiple objects (Photoshop-style), with visibility/lock inheritance and full Firestore sync.
 
 ## Recent Changes
+- **ShareLookbooks Bug Fixes Complete (2025-10-20)** ✅
+  - ✅ Fix #1: Eliminated duplicate Firestore subscription in ShareModal
+    - ShareModal now receives `collaborators` as prop from CanvasToolbar
+    - Removed local `useCollaborators()` hook call that created duplicate subscription
+    - Files: `ShareModal.tsx`, `CanvasToolbar.tsx`
+  - ✅ Fix #2: Canvas-specific collaborators state
+    - Changed `collaborators[]` → `collaboratorsByCanvas: Record<string, Collaborator[]>`
+    - Each canvas has isolated state, prevents global pollution
+    - Files: `lookbooksStore.ts`, `useCollaborators.ts`
+  - ✅ Fix #3: Async fetch outside onSnapshot
+    - Extracted `fetchLookbooksMetadata()` helper function
+    - onSnapshot callback now synchronous, async work in `.then()` chain
+    - Prevents subscription handler blocking and infinite loops
+    - File: `lookbooksService.ts`
+  - ✅ Fix #4: React state for loading tracking
+    - Replaced closure variables with `loadingState` useState
+    - Added separate useEffect to monitor loading completion
+    - Prevents stale closure state on re-renders
+    - File: `useLookbooks.ts`
+  - **Validation:** Zero breaking changes, all consumers compatible, all linting passed
+  - **Guide:** `docs/sharelookbooks-fix-guide.md` (updated with completion status)
 - **AI Agent PRDs Created (2025-10-19)**
   - ✅ PRD 1: Basic Foundation (~260 lines)
     - Unified `manipulateCanvas` tool from day 1 (only "create" operation)
@@ -68,59 +93,7 @@ Feature 7 (Hierarchical Layers System) has replaced Feature 5B-2's incorrect fla
     - Custom: All collaboration components
   - **Files Created:** 11 new files (service, hooks, components)
   - **Files Updated:** 12 files (types, store, services, hooks, toolbar, page, rules, auth)
-- **Feature 8: My Lookbooks Complete (2025-10-19)**
-  - ✅ Multi-canvas repository at `/mylookbooks`
-  - ✅ Create, rename, delete Lookbooks with auto-generated names
-  - ✅ Inline editing (double-click, Enter saves, Escape cancels)
-  - ✅ Context menu with delete confirmation (AlertDialog)
-  - ✅ Responsive grid layout with thumbnail placeholders
-  - ✅ Empty state for new users
-  - ✅ Dynamic routing: `/canvas/[canvasId]` with back navigation
-  - ✅ Editable Lookbook name in canvas toolbar
-  - ✅ Real-time Firestore sync for all CRUD operations
-  - ✅ Google Sign-In integration alongside email/password
-  - ✅ Automatic redirect to `/mylookbooks` after auth
-  - **Architecture:**
-    - New feature: `src/features/lookbooks/`
-    - Zustand store: `lookbooksStore.ts`
-    - Service: `lookbooksService.ts` (handles all Firestore operations)
-    - 6 components: EmptyState, CreateButton, LookbookCard, LookbookContextMenu, LookbookGrid, page
-    - 2 hooks: `useLookbooks`, `useLookbookOperations`
-    - Utility: `nameGenerator.ts` (Adjective + Noun pattern)
-  - **Firestore Schema:**
-    - `canvases/{canvasId}` - Lookbook metadata (name, owner, timestamps)
-    - `users/{userId}/canvases/{canvasId}` - User's canvas index
-  - **Bug Fixes:**
-    - Fixed Firebase initialization pattern (client-side `getDb()`)
-    - Fixed user ID access (`user.id` vs `user.uid`)
-    - Fixed Firestore rules for authenticated user access
-  - **UI Components Added:**
-    - ShadCN: ContextMenu, AlertDialog (+ deps installed)
-- **Feature 7: Hierarchical Layers System Complete (2025-10-19)**
-  - ✅ Default Layer (auto-created, cannot be deleted/renamed)
-  - ✅ Create, rename, delete layers with auto-generated names
-  - ✅ Expand/collapse layers showing nested objects with 32x32 thumbnails
-  - ✅ Visibility & lock inheritance (AND logic: object + layer)
-  - ✅ "Move to Layer" via context menu submenu
-  - ✅ LayerModal for bulk object assignment with search
-  - ✅ Real-time Firestore sync for all layer operations
-  - ✅ Integration with multi-select (marquee respects layer state)
-  - ✅ Migration: objects without layerId auto-assigned to Default Layer
-  - ⚠️ **Known Issues:** Minor bugs need testing/fixes
-  - **Files Created:** 5 new (Layer, LayerList, LayerModal, CreateLayerButton, layer.ts)
-  - **Files Updated:** 9 files (stores, services, components)
-- **Feature 6: Multi-Select Complete (2025-10-19)**
-  - ✅ Marquee selection (click+drag on empty canvas)
-  - ✅ Bulk operations: move, delete, duplicate, copy/paste
-  - ✅ Multi-select drag (all objects move together)
-  - ✅ Context menu integration (shows bulk action counts)
-  - ✅ Properties panel integration (shared properties for multiple objects)
-  - ✅ Full history/undo support for all bulk operations
-  - **Major Refactor:** Split objectsStore into 3 clean stores
-    - `selectionStore` - Selection state (LOCAL ONLY, never persisted)
-    - `uiPreferencesStore` - UI preferences (localStorage)
-    - `objectsStore` - Domain data only (objects, layer management)
-  - **Bug Fixes:** Pan tool, paste format, delete key, right-click selection
+
 
 
 
@@ -156,7 +129,7 @@ See systemPatterns.md for all technical decisions. Key choices:
 - New shapes: ~30 lines each (via useShapeInteractions)
 
 ## Blockers
-None - Core platform stable, ready for Phase 1 feature implementation
+None - All ShareLookbooks bugs fixed ✅ Ready for AI Agent implementation
 
 ## Notes
 - Core platform deployed: 5 features + ShadCN UI
@@ -174,5 +147,5 @@ None - Core platform stable, ready for Phase 1 feature implementation
 - Foundation for PRD 2 complex commands
 
 ---
-*Last Updated: 2025-10-19 - AI Agent PRDs created, PRD 1 ready for implementation*
+*Last Updated: 2025-10-20 - ShareLookbooks Fix #1 complete, implementation guide created*
 

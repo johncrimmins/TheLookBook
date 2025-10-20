@@ -16,6 +16,14 @@
         }
       }
     },
+    "shapePreviews": {
+      "$canvasId": {
+        "$userId": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid == $userId"
+        }
+      }
+    },
     "deltas": {
       "$canvasId": {
         ".read": "auth != null",

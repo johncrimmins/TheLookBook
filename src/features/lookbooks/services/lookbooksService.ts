@@ -9,15 +9,9 @@ import {
   onSnapshot,
   Timestamp,
   writeBatch,
-  getFirestore,
 } from 'firebase/firestore';
-import { getApp } from '@/features/auth/lib/firebase';
+import { getDb } from '@/shared/services/firebase';
 import { Lookbook, CreateLookbookData, UpdateLookbookData, UserCanvasIndex } from '../types';
-
-// Get Firestore instance (will only work on client side)
-function getDb() {
-  return getFirestore(getApp());
-}
 
 /**
  * Create a new Lookbook
@@ -55,13 +49,21 @@ export async function createLookbook(
 
   // Feature 9: Create owner collaborator entry
   const collaboratorRef = doc(db, `canvases/${canvasRef.id}/collaborators/${data.ownerId}`);
-  batch.set(collaboratorRef, {
+  const collaboratorData: any = {
     email: userEmail || '',
-    displayName: userDisplayName,
-    photoURL: userPhotoURL,
+    displayName: userDisplayName || null,
     role: 'owner',
     addedAt: now,
-  });
+  };
+  
+  // Only add photoURL if it's defined (Firestore doesn't accept undefined)
+  if (userPhotoURL !== undefined && userPhotoURL !== null) {
+    collaboratorData.photoURL = userPhotoURL;
+  } else {
+    collaboratorData.photoURL = null;
+  }
+  
+  batch.set(collaboratorRef, collaboratorData);
 
   await batch.commit();
 
@@ -72,15 +74,26 @@ export async function createLookbook(
  * Get a Lookbook by ID
  */
 export async function getLookbook(canvasId: string): Promise<Lookbook | null> {
-  const db = getDb();
-  const docRef = doc(db, 'canvases', canvasId);
-  const docSnap = await getDoc(docRef);
+  try {
+    console.log('[Lookbooks] Fetching lookbook:', canvasId);
+    const db = getDb();
+    const docRef = doc(db, 'canvases', canvasId);
+    const docSnap = await getDoc(docRef);
 
-  if (!docSnap.exists()) {
-    return null;
+    if (!docSnap.exists()) {
+      console.log('[Lookbooks] Lookbook not found:', canvasId);
+      return null;
+    }
+
+    return docSnap.data() as Lookbook;
+  } catch (error) {
+    console.error('[Lookbooks] Error fetching lookbook:', {
+      canvasId,
+      error: error instanceof Error ? error.message : error,
+      code: error instanceof Error && 'code' in error ? (error as any).code : undefined
+    });
+    throw error;
   }
-
-  return docSnap.data() as Lookbook;
 }
 
 /**
@@ -156,7 +169,23 @@ export function subscribeToUserLookbooks(
 }
 
 /**
+ * Helper: Fetch lookbooks metadata from canvas IDs
+ * Fix #3: Extracted async logic outside onSnapshot to prevent blocking
+ */
+async function fetchLookbooksMetadata(canvasIds: string[]): Promise<Lookbook[]> {
+  if (canvasIds.length === 0) return [];
+  
+  const lookbooksPromises = canvasIds.map((canvasId) => getLookbook(canvasId));
+  const lookbooks = await Promise.all(lookbooksPromises);
+  
+  return lookbooks
+    .filter((lb): lb is Lookbook => lb !== null)
+    .sort((a, b) => b.updatedAt.seconds - a.updatedAt.seconds);
+}
+
+/**
  * Subscribe to user's Lookbooks filtered by role (Feature 9)
+ * Fix #3: Async fetch moved to side effect to prevent infinite loops
  */
 export function subscribeToUserLookbooksByRole(
   userId: string,
@@ -164,40 +193,43 @@ export function subscribeToUserLookbooksByRole(
   callback: (lookbooks: Lookbook[]) => void,
   onError?: (error: Error) => void
 ): () => void {
+  console.log('[Lookbooks] Subscribing to lookbooks by role:', { userId, role });
   const db = getDb();
   const userCanvasesRef = collection(db, `users/${userId}/canvases`);
   const roleQuery = query(userCanvasesRef, where('role', '==', role));
 
   return onSnapshot(
     roleQuery,
-    async (snapshot) => {
-      try {
-        if (snapshot.docs.length === 0) {
-          callback([]);
-          return;
-        }
-
-        // Fetch full canvas metadata for each
-        const lookbooksPromises = snapshot.docs.map(async (userCanvasDoc) => {
-          const canvasId = userCanvasDoc.id;
-          return getLookbook(canvasId);
+    (snapshot) => {
+      // SYNCHRONOUS: Extract canvas IDs immediately
+      const canvasIds = snapshot.docs.map((doc) => doc.id);
+      
+      console.log('[Lookbooks] Subscription snapshot received:', {
+        role,
+        count: canvasIds.length,
+        canvasIds
+      });
+      
+      // ASYNC SIDE EFFECT: Fetch metadata without blocking subscription
+      fetchLookbooksMetadata(canvasIds)
+        .then(callback)
+        .catch((error) => {
+          console.error('[Lookbooks] Error loading lookbooks by role:', {
+            role,
+            error,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorCode: error instanceof Error && 'code' in error ? (error as any).code : undefined
+          });
+          if (onError) onError(error instanceof Error ? error : new Error(String(error)));
         });
-
-        const lookbooks = await Promise.all(lookbooksPromises);
-        const validLookbooks = lookbooks
-          .filter((lb): lb is Lookbook => lb !== null)
-          .sort((a, b) => b.updatedAt.seconds - a.updatedAt.seconds);
-
-        callback(validLookbooks);
-      } catch (error) {
-        console.error('Error loading Lookbooks by role:', error);
-        if (onError && error instanceof Error) {
-          onError(error);
-        }
-      }
     },
     (error) => {
-      console.error('Lookbooks subscription error:', error);
+      console.error('[Lookbooks] Subscription error:', {
+        role,
+        error,
+        errorMessage: error.message,
+        errorCode: 'code' in error ? (error as any).code : undefined
+      });
       if (onError) {
         onError(error);
       }

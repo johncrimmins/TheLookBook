@@ -65,15 +65,21 @@ export default function MyLookbooksPage() {
                 <p className="text-gray-600">Loading your Lookbooks...</p>
               </div>
             </div>
-          ) : error ? (
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="text-center text-red-600">
-                <p className="text-lg font-semibold">Error loading Lookbooks</p>
-                <p className="text-sm mt-2">{error}</p>
-              </div>
-            </div>
           ) : ownedLookbooks.length === 0 && sharedLookbooks.length === 0 ? (
-            <EmptyState onCreateClick={handleCreate} />
+            /* Show empty state even if there's an error - first time users need to create */
+            <div>
+              {error && (
+                <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> {error}
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    This is normal for first-time users. Create your first Lookbook below!
+                  </p>
+                </div>
+              )}
+              <EmptyState onCreateClick={handleCreate} />
+            </div>
           ) : (
             /* Feature 9: Split View Layout */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

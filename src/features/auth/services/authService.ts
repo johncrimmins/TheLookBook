@@ -7,8 +7,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc, getFirestore } from 'firebase/firestore';
-import { getAuth, getApp } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { getAuth, getApp, getFirestore } from '@/shared/services/firebase';
 import { AuthFormData } from '../types';
 
 /**
@@ -74,7 +74,8 @@ export async function syncUserProfile(
   photoURL?: string | null
 ): Promise<void> {
   try {
-    const db = getFirestore(getApp());
+    console.log('[Auth] Syncing user profile:', { userId, email, displayName });
+    const db = getFirestore();
     const userRef = doc(db, `users/${userId}`);
     
     await setDoc(
@@ -86,8 +87,14 @@ export async function syncUserProfile(
       },
       { merge: true } // Merge to avoid overwriting other fields
     );
+    console.log('[Auth] User profile synced successfully:', userId);
   } catch (error) {
-    console.error('Failed to sync user profile:', error);
+    console.error('[Auth] Failed to sync user profile:', {
+      userId,
+      email,
+      error: error instanceof Error ? error.message : error,
+      code: error instanceof Error && 'code' in error ? (error as any).code : undefined
+    });
     // Don't throw - this is a non-critical operation
   }
 }

@@ -10,16 +10,10 @@ import {
   onSnapshot,
   Timestamp,
   writeBatch,
-  getFirestore,
   Unsubscribe,
 } from 'firebase/firestore';
-import { getApp } from '@/features/auth/lib/firebase';
+import { getDb } from '@/shared/services/firebase';
 import { Collaborator, UserProfile, Role } from '../types';
-
-// Get Firestore instance (will only work on client side)
-function getDb() {
-  return getFirestore(getApp());
-}
 
 /**
  * Get all collaborators for a canvas

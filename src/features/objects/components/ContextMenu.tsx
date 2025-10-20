@@ -5,7 +5,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Separator } from '@/shared/components/ui/separator';
 import { Button } from '@/shared/components/ui/button';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Edit3, Copy, Layers, Trash2, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 import { useCanvasStore } from '@/features/canvas/lib/canvasStore';
 import { useObjects } from '../hooks/useObjects';
 import { useUIPreferencesStore } from '../lib/uiPreferencesStore';
@@ -158,19 +158,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal"
             onClick={handleFormatShape}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-            </svg>
+            <Edit3 className="mr-2 h-4 w-4" />
             Format Shape
           </Button>
 
@@ -182,19 +170,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal"
             onClick={isMultiSelect ? handleBulkCopy : handleCopy}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
+            <Copy className="mr-2 h-4 w-4" />
             {isMultiSelect ? `Copy (${selectionCount})` : 'Copy'}
             <span className="ml-auto text-xs text-gray-400">Ctrl+C</span>
           </Button>
@@ -205,19 +181,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal"
             onClick={isMultiSelect ? handleBulkDuplicate : handleDuplicate}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
+            <Copy className="mr-2 h-4 w-4" />
             {isMultiSelect ? `Duplicate All (${selectionCount})` : 'Duplicate'}
             <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
           </Button>
@@ -235,19 +199,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
               className="w-full justify-between h-8 px-2 text-sm font-normal"
             >
               <div className="flex items-center">
-                <svg
-                  className="mr-2 h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 4h16v16H4z" />
-                  <path d="M8 8h8v8H8z" />
-                </svg>
+                <Layers className="mr-2 h-4 w-4" />
                 Move to Layer
               </div>
               <ChevronRight className="w-4 h-4 ml-2" />
@@ -286,19 +238,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={isMultiSelect ? handleBulkDelete : handleDelete}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="3 6 5 6 21 6" />
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            </svg>
+            <Trash2 className="mr-2 h-4 w-4" />
             {isMultiSelect ? `Delete All (${selectionCount})` : 'Delete'}
           </Button>
 
@@ -310,19 +250,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal"
             onClick={handleBringToFront}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="17 11 12 6 7 11" />
-              <polyline points="17 18 12 13 7 18" />
-            </svg>
+            <ArrowUpToLine className="mr-2 h-4 w-4" />
             Bring to Front
             <span className="ml-auto text-xs text-gray-400">Ctrl+Shift+]</span>
           </Button>
@@ -333,19 +261,7 @@ export function ContextMenu({ canvasId, onDuplicate, onCopy }: ContextMenuProps)
             className="w-full justify-start h-8 px-2 text-sm font-normal"
             onClick={handleSendToBack}
           >
-            <svg
-              className="mr-2 h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="7 13 12 18 17 13" />
-              <polyline points="7 6 12 11 17 6" />
-            </svg>
+            <ArrowDownToLine className="mr-2 h-4 w-4" />
             Send to Back
             <span className="ml-auto text-xs text-gray-400">Ctrl+Shift+[</span>
           </Button>

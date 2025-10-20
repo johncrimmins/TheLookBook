@@ -41,17 +41,26 @@ All 5 core features deployed: Auth, Presence, Canvas, Objects, History + ShadCN 
 
 
 ## In Progress
-📋 **AI Agent PRD 1:** Basic Foundation (Ready for Implementation)
+📋 **ShareLookbooks Bug Fixes** (3 remaining fixes)
+  - ✅ Fix #1 Complete: Eliminated duplicate Firestore subscription (2025-10-20)
+  - 📋 Fix #2: Make collaborators canvas-specific in store
+  - 📋 Fix #3: Move async fetch outside onSnapshot callback
+  - 📋 Fix #4: Stabilize loading state logic
+  - Guide: `docs/sharelookbooks-fix-guide.md`
+📋 **AI Agent PRD 1:** Basic Foundation (Pending bug fixes)
   - Status: PRDs created and reviewed
   - Next: Install dependencies, build API route, create chat UI
   - Files: `tasks/prd-ai-agent-basic.md` (260 lines)
   - Goal: Simple shape creation with LangChain + OpenAI
 
 ## Known Issues
-- **Bug #1 (CRITICAL):** Canvas crash - presence.map is not a function (CanvasToolbar.tsx:106)
-- **Bug #2 (HIGH):** generateLayerName import error (LayerItem.tsx, useObjects.ts)
+- ⚠️ **ShareLookbooks Data Flow Issues** (3 fixes remaining):
+  - Global state pollution causing wrong collaborators to display
+  - Async operations in onSnapshot causing potential infinite loops
+  - Closure stale state in loading logic
+  - Guide: `docs/sharelookbooks-fix-guide.md`
+- Active bugs tracked in testing system (testing agents: see `docs/testing/README.md`)
 - Performance benchmarks need validation with real concurrent users
-- See `docs/testing/bugs-found.md` for automated test findings
 
 ## Blockers
 None - Core platform stable, Phase 1 implementation in progress
@@ -72,6 +81,37 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 - **Lookbook Components:** 12 (6 from Feature 8 + 6 collaboration components from Feature 9)
 
 ## Recent Updates
+
+### 2025-10-20 - ShareLookbooks Bug Fix #1 Complete ✅
+**Status:** First of 4 fixes complete - duplicate subscription eliminated
+
+**Issue Identified:**
+- ShareModal and CanvasToolbar both called `useCollaborators(canvasId)`
+- Created duplicate Firestore subscriptions to same collection
+- Race conditions when modal opened/closed
+- Cleanup function cleared global collaborators state affecting other components
+
+**Fix Applied:**
+- ShareModal now receives `collaborators: Collaborator[]` as prop
+- Removed local `useCollaborators()` hook call in ShareModal
+- Only CanvasToolbar maintains the subscription
+- No duplicate subscriptions or cleanup conflicts
+
+**Files Updated:**
+- `src/features/lookbooks/components/ShareModal.tsx` (removed hook, added prop)
+- `src/features/canvas/components/CanvasToolbar.tsx` (passes collaborators prop)
+
+**Validation:**
+- Opening ShareModal no longer triggers new Firestore subscription
+- Closing ShareModal doesn't clear collaborators in toolbar
+- No console errors or re-render warnings
+
+**Remaining Fixes:**
+- Fix #2: Make collaborators canvas-specific in store (P0)
+- Fix #3: Move async fetch outside onSnapshot callback (P1)
+- Fix #4: Stabilize loading state logic (P1)
+
+**Implementation Guide:** `docs/sharelookbooks-fix-guide.md`
 
 ### 2025-10-19 - AI Agent PRDs Created ✅
 **Status:** PRDs reviewed and ready for implementation
@@ -312,5 +352,5 @@ All criteria met - see techContext.md for performance targets and projectbrief.m
 3. **Future** - Bug fixes, advanced Lookbooks features, performance testing
 
 ---
-*Last Updated: 2025-10-19 - AI Agent PRDs created, PRD 1 ready for implementation*
+*Last Updated: 2025-10-20 - ShareLookbooks Fix #1 complete, 3 fixes remaining*
 

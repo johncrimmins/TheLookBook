@@ -4,6 +4,8 @@
 
 Modular testing documentation for CollabCanvas v3 using Chrome DevTools MCP. Each file focuses on a specific testing area with ready-to-use prompts.
 
+**For Testing Agents:** Start with [agent-testing-guide.md](./agent-testing-guide.md) for autonomous testing workflows.
+
 **Prerequisites:** Chrome DevTools MCP configured in Cursor settings
 
 ---
@@ -51,34 +53,31 @@ Modular testing documentation for CollabCanvas v3 using Chrome DevTools MCP. Eac
    - Memory leak detection
    - Runtime debugging
 
-### Feature-Specific Testing
-
-5. **[feature-6-multiselect.md](./feature-6-multiselect.md)**
-   - Marquee selection (60 FPS)
-   - Bulk operations (delete, duplicate, move)
-   - Properties panel integration
-
-6. **[feature-7-layers.md](./feature-7-layers.md)**
-   - Visibility/lock inheritance (AND logic)
-   - Layer operations performance
-   - Hierarchical structure validation
-
-7. **[feature-8-lookbooks.md](./feature-8-lookbooks.md)**
-   - CRUD operations latency
-   - Real-time subscription
-   - Responsive grid layout
-
 ### Additional Resources
 
-8. **[ui-visual.md](./ui-visual.md)**
-   - Responsive layout testing
+5. **[ui-visual.md](./ui-visual.md)**
+   - Responsive layout testing (desktop/tablet/mobile)
    - Screenshot automation
    - Visual state documentation
+   - Accessibility checks
 
-9. **[benchmarks.md](./benchmarks.md)**
+6. **[benchmarks.md](./benchmarks.md)**
    - Performance targets table
-   - Benchmark commands
+   - Benchmark commands by metric
    - Success criteria checklist
+   - Core Web Vitals targets
+
+7. **[bugs-found.md](./bugs-found.md)**
+   - Auto-generated bug log from testing sessions
+   - Bug severity, location, reproduction steps
+   - Performance test results
+   - Test status tracking
+
+8. **[agent-testing-guide.md](./agent-testing-guide.md)**
+   - Complete guide for autonomous AI testing
+   - Setup instructions for Chrome DevTools MCP
+   - Workflow for running tests hands-off
+   - Bug logging procedures
 
 ---
 

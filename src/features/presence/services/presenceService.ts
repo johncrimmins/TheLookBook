@@ -1,6 +1,6 @@
 // Presence service - handles real-time cursor and user presence via Firebase RTDB
 import { ref, set, onValue, onDisconnect, remove } from 'firebase/database';
-import { getRTDB } from '../lib/firebase';
+import { getRTDB } from '@/shared/services/firebase';
 import { Cursor, PresenceUser } from '../types';
 import { Point } from '@/shared/types';
 

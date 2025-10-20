@@ -115,7 +115,6 @@ export default function CanvasPage() {
     const clearPreview = async () => {
       try {
         await broadcastShapePreview(canvasId, null, user.id);
-        console.log('[Preview] Cleared stale preview on mount');
       } catch (error) {
         console.error('[Preview] Failed to clear preview on mount:', error);
       }
@@ -169,9 +168,7 @@ export default function CanvasPage() {
     // Clear preview if switching to select/pan tool or no cursor position
     if (tool === 'select' || tool === 'pan' || !cursorPosition) {
       // Use non-throttled immediate clear
-      broadcastShapePreview(canvasId, null, user.id).then(() => {
-        console.log('[Preview] Cleared preview (tool or cursor changed)');
-      }).catch(console.error);
+      broadcastShapePreview(canvasId, null, user.id).catch(console.error);
       return;
     }
     
